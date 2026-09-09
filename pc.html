@@ -7,14 +7,20 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
-      --primary: #2563eb; --success: #16a34a; --slate: #0f172a;
-      --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1;
+      --primary: #2563eb;
+      --success: #16a34a;
+      --slate: #0f172a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #1e293b;
     }
     body {
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
+      color: var(--text);
       margin: 0;
-      padding: 20px 20px 180px 20px; /* Espace pour la frise en bas */
+      padding: 20px 20px 190px 20px; /* Dégagement pour la frise fixe en bas */
       box-sizing: border-box;
     }
     header {
@@ -23,31 +29,80 @@
       align-items: center;
       margin-bottom: 20px;
     }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
     .btn {
-      padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600;
-      cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
     }
     .btn-sheet { background: #059669; color: white; text-decoration: none; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-dark { background: var(--slate); color: white; }
+    .btn-success { background: var(--success); color: white; }
     
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .card { background: var(--card); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
-    h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid var(--bg); padding-bottom: 8px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 8px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .row .col {
+      flex: 1;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    input:focus {
+      outline: 2px solid var(--primary);
+    }
     
-    .row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .row .col { flex: 1; }
-    label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; }
-    input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-    
-    /* FRISE D'AVANCEMENT FIXÉE EN BAS */
+    /* FRISE D'AVANCEMENT EN BAS DE L'ÉCRAN */
     #progress-tracker {
       position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 150px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 160px;
       background: #ffffff;
       border-top: 2px solid #e2e8f0;
-      box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
       padding: 10px 20px;
@@ -55,37 +110,75 @@
       z-index: 1000;
     }
     .tracker-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .tracker-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #334155;
     }
     .tracker-lanes {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; height: 100px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      height: 105px;
     }
     .lane {
-      background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px;
-      padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .lane-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
+    .lane-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 4px 6px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .lane-content {
+      padding: 6px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
     .badge-group {
-      background: #e0e7ff; color: #1e3a8a; font-size: 11px; padding: 4px 6px;
-      border-radius: 4px; font-weight: 600; border: 1px solid #c7d2fe; display: flex; justify-content: space-between;
+      background: #e0e7ff;
+      color: #1e3a8a;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid #c7d2fe;
+      display: flex;
+      justify-content: space-between;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>🏁 Tour de Contrôle</h1>
-    <a href="https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit?usp=sharing" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
+    <h1>🏁 Tour de Contrôle PC</h1>
+    <a href="#" id="linkSheet" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
   </header>
 
   <div class="grid">
-    <!-- COLONNE 1 : DÉPART -->
+    <!-- BLOC DÉPART -->
     <div class="card">
       <h2>🚩 Enregistrement & Départ</h2>
-      <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <button class="btn btn-dark" onclick="startScanner('depart')">📷 Scanner Webcam</button>
-        <input type="text" id="depSearch" placeholder="Ou tapez N° Dossard..." style="flex:1;">
-        <button class="btn btn-primary" onclick="chargerParticipantDepart(document.getElementById('depSearch').value)">Chercher</button>
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <button class="btn btn-dark" type="button" onclick="startScanner('depart')">📷 Scanner Webcam</button>
+        <input type="text" id="depSearch" placeholder="N° Dossard..." style="flex:1;">
+        <button class="btn btn-primary" type="button" onclick="declencherRechercheDepart()">Chercher</button>
       </div>
       <div id="reader-depart" style="display:none; width:100%; height:200px; margin-bottom:10px;"></div>
 
@@ -93,7 +186,7 @@
         <input type="hidden" id="depNbInitial">
         <div class="row">
           <div class="col"><label>N° Dossard *</label><input type="text" id="depNum" required></div>
-          <div class="col"><label>Nb personnes *</label><input type="number" id="depNb" min="1" required></div>
+          <div class="col"><label>Nb personnes *</label><input type="number" id="depNb" min="1" value="1" required></div>
         </div>
         <div class="row">
           <div class="col"><label>Nom</label><input type="text" id="depNom"></div>
@@ -108,102 +201,297 @@
             <input type="checkbox" id="depSendEmail" checked style="width:auto;"> Envoyer email de confirmation
           </label>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;">Valider le Départ</button>
+        <button type="submit" class="btn btn-primary" id="btnSubmitDepart" style="width:100%;">Valider le Départ</button>
       </form>
-      <div id="depMsg" style="margin-top:8px; font-weight:600; font-size:13px;"></div>
+      <div id="depMsg" style="margin-top:10px; font-weight:600; font-size:13px;"></div>
     </div>
 
-    <!-- COLONNE 2 : ARRIVÉE -->
+    <!-- BLOC ARRIVÉE -->
     <div class="card">
       <h2>🏁 Pointage Arrivée</h2>
-      <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <button class="btn btn-dark" onclick="startScanner('arrivee')">📷 Scanner Webcam</button>
-        <input type="text" id="arrSearch" placeholder="Ou tapez N° Dossard..." style="flex:1;">
-        <button class="btn btn-primary" onclick="chargerParticipantArrivee(document.getElementById('arrSearch').value)">Chercher</button>
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <button class="btn btn-dark" type="button" onclick="startScanner('arrivee')">📷 Scanner Webcam</button>
+        <input type="text" id="arrSearch" placeholder="N° Dossard..." style="flex:1;">
+        <button class="btn btn-primary" type="button" onclick="declencherRechercheArrivee()">Chercher</button>
       </div>
       <div id="reader-arrivee" style="display:none; width:100%; height:200px; margin-bottom:10px;"></div>
 
-      <div id="arrBox" style="background:#f8fafc; border:1px solid var(--border); padding:16px; border-radius:8px; display:none;">
-        <p style="margin:0 0 10px 0; font-size:16px;">Participant : <strong id="arrNom"></strong> (<span id="arrNb"></span> pers.)</p>
-        <p style="margin:0 0 14px 0; color:#64748b; font-size:13px;">N° Dossard : <strong id="arrNum"></strong></p>
-        <button class="btn btn-sheet" style="width:100%;" onclick="validerArriveePC()">Valider l'Arrivée</button>
+      <div id="arrBox" style="background:#f1f5f9; border:1px solid var(--border); padding:16px; border-radius:8px; display:none;">
+        <p style="margin:0 0 8px 0; font-size:16px;">Participant : <strong id="arrNom"></strong> (<span id="arrNb"></span> pers.)</p>
+        <p style="margin:0 0 14px 0; color:#64748b; font-size:13px;">Dossard N° : <strong id="arrNum"></strong></p>
+        <button class="btn btn-success" type="button" id="btnValiderArr" style="width:100%;" onclick="validerArriveePC()">Valider l'Arrivée</button>
       </div>
-      <div id="arrMsg" style="margin-top:8px; font-weight:600; font-size:13px;"></div>
+      <div id="arrMsg" style="margin-top:10px; font-weight:600; font-size:13px;"></div>
     </div>
   </div>
 
-  <!-- BANDE D'AVANCEMENT EN BAS -->
+  <!-- BANDE D'AVANCEMENT EN TEMPS RÉEL -->
   <div id="progress-tracker">
     <div class="tracker-header">
-      <span style="font-weight:700; font-size:12px; color:#334155;">CHEMIN DE COURSE (AVANCEMENT EN DIRECT)</span>
-      <span id="trackerTimer" style="font-size:11px; color:#94a3b8;">Actualisation auto...</span>
+      <span class="tracker-title">CHEMIN DE COURSE (AVANCEMENT EN DIRECT)</span>
+      <span id="trackerTimer" style="font-size:12px; color:#64748b;">Mise à jour en cours...</span>
     </div>
     <div class="tracker-lanes">
-      <div class="lane" id="lane-inscrits"><div class="lane-title">Non partis</div></div>
-      <div class="lane" id="lane-depart"><div class="lane-title">En course (Départ)</div></div>
-      <div class="lane" id="lane-ravito1"><div class="lane-title">Ravito 1 passé</div></div>
-      <div class="lane" id="lane-ravito2"><div class="lane-title">Ravito 2 passé</div></div>
-      <div class="lane" id="lane-arrivee"><div class="lane-title">Arrivés</div></div>
+      <div class="lane"><div class="lane-title">Non partis</div><div class="lane-content" id="lane-inscrits"></div></div>
+      <div class="lane"><div class="lane-title">Départ validé</div><div class="lane-content" id="lane-depart"></div></div>
+      <div class="lane"><div class="lane-title">Ravito 1 passé</div><div class="lane-content" id="lane-ravito1"></div></div>
+      <div class="lane"><div class="lane-title">Ravito 2 passé</div><div class="lane-content" id="lane-ravito2"></div></div>
+      <div class="lane"><div class="lane-title">Arrivés</div><div class="lane-content" id="lane-arrivee"></div></div>
     </div>
   </div>
 
   <script>
-    // METTEZ VOTRE URL APPS SCRIPT ICI (/exec)
+    // -------------------------------------------------------------
+    // CONFIGURATION : REMPLACEZ AVEC VOS LIENS
+    // -------------------------------------------------------------
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
+    const SHEET_URL  = "https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit?usp=sharing";
+    // -------------------------------------------------------------
+
+    document.getElementById("linkSheet").href = SHEET_URL;
 
     let activeScanner = null;
 
+    // Gestion du scanner Webcam
     function startScanner(cible) {
       const readerId = "reader-" + cible;
       const el = document.getElementById(readerId);
       el.style.display = "block";
 
-      if (activeScanner) activeScanner.stop();
+      if (activeScanner) {
+        activeScanner.stop().catch(() => {});
+      }
+      
       activeScanner = new Html5Qrcode(readerId);
       activeScanner.start(
-        { facingMode: "user" }, // Webcam PC
+        { facingMode: "user" },
         { fps: 10, qrbox: { width: 180, height: 180 } },
-        (num) => {
-          activeScanner.stop().then(() => el.style.display = "none");
-          if (cible === 'depart') chargerParticipantDepart(num.trim());
-          if (cible === 'arrivee') chargerParticipantArrivee(num.trim());
+        (decodedNum) => {
+          activeScanner.stop().then(() => { el.style.display = "none"; });
+          const num = decodedNum.trim();
+          if (cible === 'depart') {
+            document.getElementById("depSearch").value = num;
+            chargerParticipantDepart(num);
+          }
+          if (cible === 'arrivee') {
+            document.getElementById("arrSearch").value = num;
+            chargerParticipantArrivee(num);
+          }
         },
         () => {}
-      );
+      ).catch(err => {
+        alert("Impossible d'activer la caméra. Vérifiez les autorisations du navigateur.");
+      });
     }
 
-    // Gestion Départ PC
+    // Déclencheurs touches et boutons
+    function declencherRechercheDepart() {
+      const num = document.getElementById("depSearch").value.trim();
+      if (num) chargerParticipantDepart(num);
+    }
+    document.getElementById("depSearch").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); declencherRechercheDepart(); }
+    });
+
+    function declencherRechercheArrivee() {
+      const num = document.getElementById("arrSearch").value.trim();
+      if (num) chargerParticipantArrivee(num);
+    }
+    document.getElementById("arrSearch").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); declencherRechercheArrivee(); }
+    });
+
+    // 1. RECHERCHE DÉPART PC
     function chargerParticipantDepart(num) {
-      document.getElementById("depMsg").textContent = "Recherche...";
-     fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`, {
-  method: "GET",
-  redirect: "follow"
-})
-.then(r => r.json())
-        .then(res => {
-          if (!res.success) return;
-          ["inscrits", "depart", "ravito1", "ravito2", "arrivee"].forEach(l => {
-            const lane = document.getElementById("lane-" + l);
-            lane.innerHTML = `<div class="lane-title">${lane.firstElementChild.textContent}</div>`;           });            res.participants.forEach(p => {             const badge = document.createElement("div");             badge.className = "badge-group";             badge.innerHTML = `<span>#${p.numero} ${p.nom}</span><span>(${p.nbPersonnes}p)</span>`;
+      const msg = document.getElementById("depMsg");
+      msg.style.color = "#1e293b";
+      msg.textContent = `Recherche du dossard n°${num}...`;
 
-            // Règle de position dans la frise selon les étapes franchies
-            if (p.arrivee) {
-              document.getElementById("lane-arrivee").appendChild(badge);
-            } else if (p.ravito2) {
-              document.getElementById("lane-ravito2").appendChild(badge);
-            } else if (p.ravito1) {
-              document.getElementById("lane-ravito1").appendChild(badge);
-            } else if (p.depart) {
-              document.getElementById("lane-depart").appendChild(badge);
-            } else {
-              document.getElementById("lane-inscrits").appendChild(badge);
-            }
-          });
-        });
+      fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`, {
+        method: "GET",
+        redirect: "follow"
+      })
+      .then(res => res.json())
+      .then(d => {
+        document.getElementById("depNum").value = num;
+        if (d && d.found) {
+          document.getElementById("depNom").value = d.nom || "";
+          document.getElementById("depPrenom").value = d.prenom || "";
+          document.getElementById("depNb").value = d.nbPersonnes || 1;
+          document.getElementById("depNbInitial").value = d.nbPersonnes || 1;
+          document.getElementById("depEmail").value = d.email || "";
+          document.getElementById("depTel").value = d.telephone || "";
+          msg.style.color = "green";
+          msg.textContent = `Participant n°${num} chargé !`;
+        } else {
+          document.getElementById("depNbInitial").value = "";
+          msg.style.color = "orange";
+          msg.textContent = `Dossard n°${num} non trouvé. Saisie manuelle prête.`;
+        }
+      })
+      .catch(err => {
+        msg.style.color = "red";
+        msg.textContent = "Erreur de connexion.";
+      });
     }
 
+    // 2. VALIDATION DÉPART PC
+    document.getElementById("formDepart").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btnSubmitDepart");
+      const msg = document.getElementById("depMsg");
+      btn.disabled = true;
+      msg.style.color = "#1e293b";
+      msg.textContent = "Validation du départ...";
+
+      const payload = {
+        action: "depart",
+        numero: document.getElementById("depNum").value,
+        nom: document.getElementById("depNom").value,
+        prenom: document.getElementById("depPrenom").value,
+        nbPersonnes: document.getElementById("depNb").value,
+        nbInitial: document.getElementById("depNbInitial").value,
+        email: document.getElementById("depEmail").value,
+        telephone: document.getElementById("depTel").value,
+        sendEmail: document.getElementById("depSendEmail").checked
+      };
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        msg.style.color = "green";
+        msg.textContent = "Départ validé avec succès !";
+        document.getElementById("formDepart").reset();
+        document.getElementById("depSearch").value = "";
+        setTimeout(refreshTracker, 800);
+      })
+      .catch(() => {
+        msg.style.color = "red";
+        msg.textContent = "Erreur de communication.";
+      })
+      .finally(() => {
+        btn.disabled = false;
+      });
+    });
+
+    // 3. RECHERCHE ARRIVÉE PC
+    let currentArrNum = "";
+    function chargerParticipantArrivee(num) {
+      const msg = document.getElementById("arrMsg");
+      const box = document.getElementById("arrBox");
+      msg.style.color = "#1e293b";
+      msg.textContent = `Recherche du dossard n°${num}...`;
+      box.style.display = "none";
+
+      fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`, {
+        method: "GET",
+        redirect: "follow"
+      })
+      .then(res => res.json())
+      .then(d => {
+        if (d && d.found) {
+          currentArrNum = d.numero;
+          document.getElementById("arrNum").textContent = d.numero;
+          document.getElementById("arrNom").textContent = (d.nom || "") + " " + (d.prenom || "");
+          document.getElementById("arrNb").textContent = d.nbPersonnes || 1;
+          box.style.display = "block";
+          msg.textContent = "";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = `Dossard n°${num} introuvable dans le tableau.`;
+        }
+      })
+      .catch(() => {
+        msg.style.color = "red";
+        msg.textContent = "Erreur de connexion.";
+      });
+    }
+
+    // 4. VALIDATION ARRIVÉE PC
+    function validerArriveePC() {
+      const btn = document.getElementById("btnValiderArr");
+      const msg = document.getElementById("arrMsg");
+      const box = document.getElementById("arrBox");
+      btn.disabled = true;
+      msg.style.color = "#1e293b";
+      msg.textContent = "Enregistrement de l'arrivée...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "pointage", poste: "arrivee", numero: currentArrNum })
+      })
+      .then(() => {
+        msg.style.color = "green";
+        msg.textContent = `Arrivée du dossard n°${currentArrNum} validée !`;
+        box.style.display = "none";
+        document.getElementById("arrSearch").value = "";
+        setTimeout(refreshTracker, 800);
+      })
+      .catch(() => {
+        msg.style.color = "red";
+        msg.textContent = "Erreur de validation.";
+      })
+      .finally(() => {
+        btn.disabled = false;
+      });
+    }
+
+    // 5. FRISE D'AVANCEMENT EN DIRECT
+    function refreshTracker() {
+      const timer = document.getElementById("trackerTimer");
+      
+      fetch(`${SCRIPT_URL}?action=getAll`, {
+        method: "GET",
+        redirect: "follow"
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (!res || !res.success) return;
+
+        // Vider le contenu sans détruire les conteneurs
+        document.getElementById("lane-inscrits").innerHTML = "";
+        document.getElementById("lane-depart").innerHTML = "";
+        document.getElementById("lane-ravito1").innerHTML = "";
+        document.getElementById("lane-ravito2").innerHTML = "";
+        document.getElementById("lane-arrivee").innerHTML = "";
+
+        res.participants.forEach(p => {
+          const badge = document.createElement("div");
+          badge.className = "badge-group";
+          badge.title = `Départ: ${p.depart || '-'} | Rav1: ${p.ravito1 || '-'} | Rav2: ${p.ravito2 || '-'} | Arr: ${p.arrivee || '-'}`;
+          badge.innerHTML = `<span>#${p.numero} ${p.nom}</span><span>(${p.nbPersonnes}p)</span>`;
+
+          if (p.arrivee) {
+            document.getElementById("lane-arrivee").appendChild(badge);
+          } else if (p.ravito2) {
+            document.getElementById("lane-ravito2").appendChild(badge);
+          } else if (p.ravito1) {
+            document.getElementById("lane-ravito1").appendChild(badge);
+          } else if (p.depart) {
+            document.getElementById("lane-depart").appendChild(badge);
+          } else {
+            document.getElementById("lane-inscrits").appendChild(badge);
+          }
+        });
+
+        const now = new Date();
+        const timeStr = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2);
+        timer.textContent = `Actualisé à ${timeStr} (${res.participants.length} participants)`;
+      })
+      .catch(() => {
+        timer.textContent = "Erreur de synchronisation frise.";
+      });
+    }
+
+    // Premier chargement + rafraîchissement auto toutes les 15 secondes
     refreshTracker();
-    setInterval(refreshTracker, 15000); // Mise à jour toutes les 15s
+    setInterval(refreshTracker, 15000);
   </script>
 </body>
 </html>
