@@ -142,6 +142,9 @@
       background: #e2e8f0;
       padding: 4px 6px;
       border-bottom: 1px solid #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .lane-content {
       padding: 6px;
@@ -225,18 +228,18 @@
     </div>
   </div>
 
-  <!-- BANDE D'AVANCEMENT EN TEMPS RÉEL -->
+  <!-- BANDE D'AVANCEMENT EN TEMPS RÉEL (AVEC COMPTEURS DE PERSONNES) -->
   <div id="progress-tracker">
     <div class="tracker-header">
       <span class="tracker-title">CHEMIN DE COURSE (AVANCEMENT EN DIRECT)</span>
       <span id="trackerTimer" style="font-size:12px; color:#64748b;">Mise à jour en cours...</span>
     </div>
     <div class="tracker-lanes">
-      <div class="lane"><div class="lane-title">Non partis</div><div class="lane-content" id="lane-inscrits"></div></div>
-      <div class="lane"><div class="lane-title">Départ validé</div><div class="lane-content" id="lane-depart"></div></div>
-      <div class="lane"><div class="lane-title">Ravito 1 passé</div><div class="lane-content" id="lane-ravito1"></div></div>
-      <div class="lane"><div class="lane-title">Ravito 2 passé</div><div class="lane-content" id="lane-ravito2"></div></div>
-      <div class="lane"><div class="lane-title">Arrivés</div><div class="lane-content" id="lane-arrivee"></div></div>
+      <div class="lane"><div class="lane-title" id="title-inscrits">Non partis (0p)</div><div class="lane-content" id="lane-inscrits"></div></div>
+      <div class="lane"><div class="lane-title" id="title-depart">Départ validé (0p)</div><div class="lane-content" id="lane-depart"></div></div>
+      <div class="lane"><div class="lane-title" id="title-ravito1">Ravito 1 (0p)</div><div class="lane-content" id="lane-ravito1"></div></div>
+      <div class="lane"><div class="lane-title" id="title-ravito2">Ravito 2 (0p)</div><div class="lane-content" id="lane-ravito2"></div></div>
+      <div class="lane"><div class="lane-title" id="title-arrivee">Arrivés (0p)</div><div class="lane-content" id="lane-arrivee"></div></div>
     </div>
   </div>
 
@@ -252,7 +255,7 @@
 
     let activeScanner = null;
 
-    // Gestion du scanner Webcam
+    // Scanner Webcam
     function startScanner(cible) {
       const readerId = "reader-" + cible;
       const el = document.getElementById(readerId);
@@ -284,7 +287,7 @@
       });
     }
 
-    // Déclencheurs touches et boutons
+    // Déclencheurs touches et clics
     function declencherRechercheDepart() {
       const num = document.getElementById("depSearch").value.trim();
       if (num) chargerParticipantDepart(num);
@@ -442,7 +445,7 @@
       });
     }
 
-    // 5. FRISE D'AVANCEMENT EN DIRECT
+    // 5. ACTUALISATION DE LA FRISE AVEC COMPTEURS DE PERSONNES
     function refreshTracker() {
       const timer = document.getElementById("trackerTimer");
       
@@ -454,42 +457,61 @@
       .then(res => {
         if (!res || !res.success) return;
 
-        // Vider le contenu sans détruire les conteneurs
+        // Vider les couloirs
         document.getElementById("lane-inscrits").innerHTML = "";
         document.getElementById("lane-depart").innerHTML = "";
         document.getElementById("lane-ravito1").innerHTML = "";
         document.getElementById("lane-ravito2").innerHTML = "";
         document.getElementById("lane-arrivee").innerHTML = "";
 
+        let countInscrits = 0;
+        let countDepart = 0;
+        let countRavito1 = 0;
+        let countRavito2 = 0;
+        let countArrivee = 0;
+
         res.participants.forEach(p => {
+          const nb = parseInt(p.nbPersonnes) || 1;
           const badge = document.createElement("div");
           badge.className = "badge-group";
           badge.title = `Départ: ${p.depart || '-'} | Rav1: ${p.ravito1 || '-'} | Rav2: ${p.ravito2 || '-'} | Arr: ${p.arrivee || '-'}`;
-          badge.innerHTML = `<span>#${p.numero} ${p.nom}</span><span>(${p.nbPersonnes}p)</span>`;
+          badge.innerHTML = `<span>#${p.numero} ${p.nom}</span><span>(${nb}p)</span>`;
 
           if (p.arrivee) {
             document.getElementById("lane-arrivee").appendChild(badge);
+            countArrivee += nb;
           } else if (p.ravito2) {
             document.getElementById("lane-ravito2").appendChild(badge);
+            countRavito2 += nb;
           } else if (p.ravito1) {
             document.getElementById("lane-ravito1").appendChild(badge);
+            countRavito1 += nb;
           } else if (p.depart) {
             document.getElementById("lane-depart").appendChild(badge);
+            countDepart += nb;
           } else {
             document.getElementById("lane-inscrits").appendChild(badge);
+            countInscrits += nb;
           }
         });
 
+        // Mise à jour des titres avec le total de personnes
+        document.getElementById("title-inscrits").textContent = `Non partis (${countInscrits}p)`;
+        document.getElementById("title-depart").textContent   = `En course (${countDepart}p)`;
+        document.getElementById("title-ravito1").textContent  = `Ravito 1 (${countRavito1}p)`;
+        document.getElementById("title-ravito2").textContent  = `Ravito 2 (${countRavito2}p)`;
+        document.getElementById("title-arrivee").textContent  = `Arrivés (${countArrivee}p)`;
+
+        const totalPersonnes = countInscrits + countDepart + countRavito1 + countRavito2 + countArrivee;
         const now = new Date();
         const timeStr = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2);
-        timer.textContent = `Actualisé à ${timeStr} (${res.participants.length} participants)`;
+        timer.textContent = `Actualisé à ${timeStr} | Total : ${totalPersonnes} personnes (${res.participants.length} groupes)`;
       })
       .catch(() => {
         timer.textContent = "Erreur de synchronisation frise.";
       });
     }
 
-    // Premier chargement + rafraîchissement auto toutes les 15 secondes
     refreshTracker();
     setInterval(refreshTracker, 15000);
   </script>
