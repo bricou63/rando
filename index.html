@@ -3,228 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Suivi des Participants</title>
+  <title>Poste Départ (Mobile)</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root {
-      --primary: #0066cc;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --border: #cbd5e1;
-      --text: #1e293b;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 16px;
-      display: flex;
-      justify-content: center;
-    }
-    .container {
-      background: var(--card);
-      width: 100%;
-      max-width: 480px;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      box-sizing: border-box;
-    }
-    h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      text-align: center;
-      font-size: 22px;
-    }
-    fieldset {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 16px;
-    }
-    legend {
-      font-weight: 600;
-      font-size: 14px;
-      padding: 0 6px;
-      color: var(--primary);
-    }
-    .form-group {
-      margin-bottom: 12px;
-    }
-    .form-group:last-child {
-      margin-bottom: 0;
-    }
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-    input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 16px; /* 16px évite le zoom auto sur iPhone */
-      box-sizing: border-box;
-      outline: none;
-    }
-    input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
-    }
-    .row {
-      display: flex;
-      gap: 10px;
-    }
-    .row .form-group {
-      flex: 1;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:disabled {
-      background-color: #94a3b8;
-      cursor: not-allowed;
-    }
-    #message {
-      text-align: center;
-      font-weight: 500;
-      margin-top: 14px;
-      font-size: 15px;
-    }
+    :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 16px; display: flex; justify-content: center; }
+    .container { background: var(--card); width: 100%; max-width: 440px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+    .btn-qr { background: #0f172a; color: white; }
+    .btn-manual { background: #e2e8f0; color: #1e293b; }
+    .btn-submit { background: var(--primary); color: white; margin-top: 14px; }
+    #reader { width: 100%; border-radius: 8px; margin-bottom: 12px; display: none; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .col { flex: 1; }
+    label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; }
+    input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+    #status { text-align: center; font-weight: 600; margin: 10px 0; font-size: 14px; }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h2>Fiche Participant</h2>
-    
-    <form id="suiviForm">
+    <h2 style="text-align:center; margin-top:0;">🚩 Poste Départ</h2>
 
-      <!-- Identification -->
-      <fieldset>
-        <legend>Identification</legend>
-        <div class="row">
-          <div class="form-group">
-            <label for="numero">N° Participation *</label>
-            <input type="text" id="numero" required placeholder="Ex: 104">
-          </div>
-          <div class="form-group">
-            <label for="nbPersonnes">Nb personnes *</label>
-            <input type="number" id="nbPersonnes" min="1" value="1" required>
-          </div>
-        </div>
-        <div class="row">
-          <div class="form-group">
-            <label for="nom">Nom *</label>
-            <input type="text" id="nom" required>
-          </div>
-          <div class="form-group">
-            <label for="prenom">Prénom *</label>
-            <input type="text" id="prenom" required>
-          </div>
-        </div>
-      </fieldset>
+    <!-- Écran d'accueil mobile avec 2 boutons -->
+    <div id="homeChoices">
+      <button class="btn btn-qr" onclick="ouvrirScan()">📷 Scanner un QR Code</button>
+      <button class="btn btn-manual" onclick="ouvrirManuel()">✍️ Remplissage Manuel</button>
+    </div>
 
-      <!-- Contact -->
-      <fieldset>
-        <legend>Contact</legend>
-        <div class="form-group">
-          <label for="email">Adresse mail</label>
-          <input type="email" id="email" placeholder="nom@exemple.fr">
-        </div>
-        <div class="form-group">
-          <label for="telephone">Téléphone</label>
-          <input type="tel" id="telephone" placeholder="06 12 34 56 78">
-        </div>
-      </fieldset>
+    <div id="reader"></div>
+    <div id="status"></div>
 
-      <!-- Horaires et Contrôles -->
-      <fieldset>
-        <legend>Pointages Horaires</legend>
-        <div class="row">
-          <div class="form-group">
-            <label for="heureDepart">Départ</label>
-            <input type="time" id="heureDepart">
-          </div>
-          <div class="form-group">
-            <label for="heureRavitaillement1">Ravitaillement 1</label>
-            <input type="time" id="heureRavitaillement1">
-          </div>
-        </div>
-        <div class="row">
-          <div class="form-group">
-            <label for="heureRavitaillement2">Ravitaillement 2</label>
-            <input type="time" id="heureRavitaillement2">
-          </div>
-          <div class="form-group">
-            <label for="heureArrivee">Arrivée</label>
-            <input type="time" id="heureArrivee">
-          </div>
-        </div>
-      </fieldset>
-
-      <button type="submit" id="btnSubmit">Enregistrer le participant</button>
-      <div id="message"></div>
+    <!-- Formulaire d'enregistrement -->
+    <form id="formDepart" style="display:none;">
+      <input type="hidden" id="nbInitial">
+      <div class="row">
+        <div class="col"><label>N° Dossard *</label><input type="text" id="numero" required></div>
+        <div class="col"><label>Nb personnes *</label><input type="number" id="nbPersonnes" min="1" required></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>Nom</label><input type="text" id="nom"></div>
+        <div class="col"><label>Prénom</label><input type="text" id="prenom"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>Email</label><input type="email" id="email"></div>
+        <div class="col"><label>Téléphone</label><input type="tel" id="tel"></div>
+      </div>
+      <div style="margin-top: 6px;">
+        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="sendEmail" checked style="width:auto;"> Envoyer email de confirmation
+        </label>
+      </div>
+      <button type="submit" class="btn btn-submit" id="btnSubmit">Valider le Départ</button>
     </form>
   </div>
 
   <script>
-    // METTEZ VOTRE LIEN APPS SCRIPT (/exec) ICI
     const SCRIPT_URL = "VOTRE_URL_GOOGLE_APPS_SCRIPT_ICI";
+    let html5QrCode = null;
 
-    document.getElementById("suiviForm").addEventListener("submit", function(e) {
+    function ouvrirScan() {
+      const reader = document.getElementById("reader");
+      reader.style.display = "block";
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (num) => {
+          html5QrCode.stop().then(() => reader.style.display = "none");
+          chercherParticipant(num.trim());
+        },
+        () => {}
+      );
+    }
+
+    function ouvrirManuel() {
+      document.getElementById("formDepart").style.display = "block";
+      document.getElementById("numero").focus();
+    }
+
+    function chercherParticipant(num) {
+      document.getElementById("status").textContent = "Recherche participant...";
+      fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`)
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById("formDepart").style.display = "block";
+          document.getElementById("numero").value = num;
+          if (d.found) {
+            document.getElementById("nom").value = d.nom;
+            document.getElementById("prenom").value = d.prenom;
+            document.getElementById("nbPersonnes").value = d.nbPersonnes;
+            document.getElementById("nbInitial").value = d.nbPersonnes;
+            document.getElementById("email").value = d.email;
+            document.getElementById("tel").value = d.telephone;
+            document.getElementById("status").style.color = "green";
+            document.getElementById("status").textContent = "Participant trouvé !";
+          } else {
+            document.getElementById("nbInitial").value = "";
+            document.getElementById("status").style.color = "orange";
+            document.getElementById("status").textContent = "Dossard introuvable, saisie manuelle.";
+          }
+        });
+    }
+
+    document.getElementById("formDepart").addEventListener("submit", (e) => {
       e.preventDefault();
-      
       const btn = document.getElementById("btnSubmit");
-      const msg = document.getElementById("message");
-
       btn.disabled = true;
-      msg.style.color = "#1e293b";
-      msg.textContent = "Enregistrement en cours...";
+      document.getElementById("status").textContent = "Validation du départ en cours...";
 
       const payload = {
+        action: "depart",
         numero: document.getElementById("numero").value,
         nom: document.getElementById("nom").value,
         prenom: document.getElementById("prenom").value,
         nbPersonnes: document.getElementById("nbPersonnes").value,
+        nbInitial: document.getElementById("nbInitial").value,
         email: document.getElementById("email").value,
-        telephone: document.getElementById("telephone").value,
-        heureDepart: document.getElementById("heureDepart").value,
-        heureRavitaillement1: document.getElementById("heureRavitaillement1").value,
-        heureRavitaillement2: document.getElementById("heureRavitaillement2").value,
-        heureArrivee: document.getElementById("heureArrivee").value
+        telephone: document.getElementById("tel").value,
+        sendEmail: document.getElementById("sendEmail").checked
       };
 
       fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
-      })
-      .then(() => {
-        msg.style.color = "#16a34a";
-        msg.textContent = "Enregistré avec succès !";
-        document.getElementById("suiviForm").reset();
-      })
-      .catch(err => {
-        console.error(err);
-        msg.style.color = "#dc2626";
-        msg.textContent = "Erreur lors de l'enregistrement.";
-      })
-      .finally(() => {
+      }).then(() => {
+        document.getElementById("status").style.color = "green";
+        document.getElementById("status").textContent = "Départ validé avec succès !";
+        document.getElementById("formDepart").reset();
+        document.getElementById("formDepart").style.display = "none";
         btn.disabled = false;
       });
     });
