@@ -256,6 +256,7 @@
     let activeScanner = null;
 
     // Scanner Webcam
+// Scanner Webcam optimisé pour PC
     function startScanner(cible) {
       const readerId = "reader-" + cible;
       const el = document.getElementById(readerId);
@@ -266,9 +267,21 @@
       }
       
       activeScanner = new Html5Qrcode(readerId);
+
+      const config = {
+        fps: 15,
+        // qrbox dynamique : prend 70% de la largeur/hauteur sans écraser le ratio
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const edgeSize = Math.floor(minEdge * 0.75);
+          return { width: edgeSize, height: edgeSize };
+        },
+        aspectRatio: 1.777778 // Ratio 16:9 standard webcam
+      };
+
       activeScanner.start(
         { facingMode: "user" },
-        { fps: 10, qrbox: { width: 180, height: 180 } },
+        config,
         (decodedNum) => {
           activeScanner.stop().then(() => { el.style.display = "none"; });
           const num = decodedNum.trim();
@@ -281,9 +294,9 @@
             chargerParticipantArrivee(num);
           }
         },
-        () => {}
+        () => {} // Ignorer les échecs frame par frame
       ).catch(err => {
-        alert("Impossible d'activer la caméra. Vérifiez les autorisations du navigateur.");
+        alert("Impossible d'activer la caméra. Vérifiez les autorisations.");
       });
     }
 
