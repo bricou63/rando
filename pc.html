@@ -20,7 +20,7 @@
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 20px 20px 190px 20px; /* Dégagement pour la frise fixe en bas */
+      padding: 20px 20px 190px 20px; /* Espace réservé pour la frise en bas */
       box-sizing: border-box;
     }
     header {
@@ -91,6 +91,17 @@
     }
     input:focus {
       outline: 2px solid var(--primary);
+    }
+
+    /* Zone vidéo Webcam (hauteur libre pour éviter d'écraser le carré) */
+    .scanner-box {
+      display: none;
+      width: 100%;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
     }
     
     /* FRISE D'AVANCEMENT EN BAS DE L'ÉCRAN */
@@ -183,7 +194,7 @@
         <input type="text" id="depSearch" placeholder="N° Dossard..." style="flex:1;">
         <button class="btn btn-primary" type="button" onclick="declencherRechercheDepart()">Chercher</button>
       </div>
-      <div id="reader-depart" style="display:none; width:100%; margin-bottom:10px;"></div>
+      <div id="reader-depart" class="scanner-box"></div>
 
       <form id="formDepart">
         <input type="hidden" id="depNbInitial">
@@ -217,7 +228,7 @@
         <input type="text" id="arrSearch" placeholder="N° Dossard..." style="flex:1;">
         <button class="btn btn-primary" type="button" onclick="declencherRechercheArrivee()">Chercher</button>
       </div>
-      <div id="reader-arrivee" style="display:none; width:100%; margin-bottom:10px;"></div>
+      <div id="reader-arrivee" class="scanner-box"></div>
 
       <div id="arrBox" style="background:#f1f5f9; border:1px solid var(--border); padding:16px; border-radius:8px; display:none;">
         <p style="margin:0 0 8px 0; font-size:16px;">Participant : <strong id="arrNom"></strong> (<span id="arrNb"></span> pers.)</p>
@@ -228,7 +239,7 @@
     </div>
   </div>
 
-  <!-- BANDE D'AVANCEMENT EN TEMPS RÉEL (AVEC COMPTEURS DE PERSONNES) -->
+  <!-- BANDE D'AVANCEMENT EN TEMPS RÉEL -->
   <div id="progress-tracker">
     <div class="tracker-header">
       <span class="tracker-title">CHEMIN DE COURSE (AVANCEMENT EN DIRECT)</span>
@@ -236,7 +247,7 @@
     </div>
     <div class="tracker-lanes">
       <div class="lane"><div class="lane-title" id="title-inscrits">Non partis (0p)</div><div class="lane-content" id="lane-inscrits"></div></div>
-      <div class="lane"><div class="lane-title" id="title-depart">Départ validé (0p)</div><div class="lane-content" id="lane-depart"></div></div>
+      <div class="lane"><div class="lane-title" id="title-depart">En course (0p)</div><div class="lane-content" id="lane-depart"></div></div>
       <div class="lane"><div class="lane-title" id="title-ravito1">Ravito 1 (0p)</div><div class="lane-content" id="lane-ravito1"></div></div>
       <div class="lane"><div class="lane-title" id="title-ravito2">Ravito 2 (0p)</div><div class="lane-content" id="lane-ravito2"></div></div>
       <div class="lane"><div class="lane-title" id="title-arrivee">Arrivés (0p)</div><div class="lane-content" id="lane-arrivee"></div></div>
@@ -245,7 +256,7 @@
 
   <script>
     // -------------------------------------------------------------
-    // CONFIGURATION : REMPLACEZ AVEC VOS LIENS
+    // CONFIGURATION : REMPLACEZ AVEC VOS PROPRES LIENS
     // -------------------------------------------------------------
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
     const SHEET_URL  = "https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit?usp=sharing";
@@ -254,42 +265,36 @@
     document.getElementById("linkSheet").href = SHEET_URL;
 
     let activeScanner = null;
-
-    // Scanner Webcam
-// Scanner Webcam optimisé pour PC
-let activeScanner = null;
     let isStopping = false;
 
+    // Fermeture propre et libération complète de la caméra
     async function stopActiveScanner() {
       if (activeScanner) {
         try {
           await activeScanner.stop();
-          activeScanner.clear(); // Nettoie complètement les balises résiduelles
-        } catch (e) {
-          // Ignore si déjà arrêté
-        }
+          activeScanner.clear();
+        } catch (e) {}
         activeScanner = null;
       }
-      // Masquer et vider les deux conteneurs
       const rd = document.getElementById("reader-depart");
       const ra = document.getElementById("reader-arrivee");
       if (rd) { rd.style.display = "none"; rd.innerHTML = ""; }
       if (ra) { ra.style.display = "none"; ra.innerHTML = ""; }
     }
 
+    // Gestion de la Webcam PC (sans écrasement, réutilisable sans F5)
     async function startScanner(cible) {
       if (isStopping) return;
       
       const readerId = "reader-" + cible;
       const el = document.getElementById(readerId);
 
-      // Si le scanner cliqué est déjà ouvert, on le referme
+      // Si déjà ouvert sur ce bouton, un clic le referme
       if (activeScanner && el.style.display === "block") {
         await stopActiveScanner();
         return;
       }
 
-      // Arrêt propre de tout scanner précédent
       await stopActiveScanner();
 
       el.style.display = "block";
@@ -297,8 +302,7 @@ let activeScanner = null;
 
       const config = {
         fps: 15,
-        // Carré parfait de 220x220 px centré
-        qrbox: { width: 220, height: 220 },
+        qrbox: { width: 220, height: 220 }, // Viseur carré non déformé
         experimentalFeatures: {
           useBarCodeDetectorIfSupported: true
         }
@@ -322,14 +326,14 @@ let activeScanner = null;
             chargerParticipantArrivee(num);
           }
         },
-        () => {} // Ignorer les frames sans QR code
+        () => {}
       ).catch(err => {
         alert("Impossible d'accéder à la webcam : " + err);
         stopActiveScanner();
       });
     }
 
-    // Déclencheurs touches et clics
+    // Déclencheurs claviers et clics
     function declencherRechercheDepart() {
       const num = document.getElementById("depSearch").value.trim();
       if (num) chargerParticipantDepart(num);
@@ -499,7 +503,7 @@ let activeScanner = null;
       .then(res => {
         if (!res || !res.success) return;
 
-        // Vider les couloirs
+        // Vider les colonnes sans toucher au DOM parent
         document.getElementById("lane-inscrits").innerHTML = "";
         document.getElementById("lane-depart").innerHTML = "";
         document.getElementById("lane-ravito1").innerHTML = "";
@@ -537,7 +541,7 @@ let activeScanner = null;
           }
         });
 
-        // Mise à jour des titres avec le total de personnes
+        // Mise à jour des compteurs dans les en-têtes
         document.getElementById("title-inscrits").textContent = `Non partis (${countInscrits}p)`;
         document.getElementById("title-depart").textContent   = `En course (${countDepart}p)`;
         document.getElementById("title-ravito1").textContent  = `Ravito 1 (${countRavito1}p)`;
