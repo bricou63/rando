@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pointage Poste</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root { --primary: #059669; --bg: #f8fafc; --card: #ffffff; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 16px; display: flex; justify-content: center; }
+    .container { background: var(--card); width: 100%; max-width: 420px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .btn-qr { background: #0f172a; color: white; margin-bottom: 12px; }
+    .btn-valider { background: var(--primary); color: white; font-size: 18px; margin-top: 14px; }
+    #reader { width: 100%; border-radius: 8px; margin-bottom: 12px; display: none; }
+    .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+    .search-btn { padding: 0 16px; background: #334155; color: white; border: none; border-radius: 6px; font-weight: 600; }
+    .check-box { background: #f1f5f9; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #cbd5e1; }
+    #status { text-align: center; font-weight: 600; margin: 12px 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="titrePoste" style="text-align:center; margin-top:0;">Pointage</h2>
+
+    <button class="btn btn-qr" onclick="ouvrirScan()">📷 Scanner QR Code</button>
+    <div id="reader"></div>
+
+    <div class="search-row">
+      <input type="text" id="manualNum" placeholder="N° Dossard manuel...">
+      <button class="search-btn" onclick="chercher(document.getElementById('manualNum').value)">OK</button>
+    </div>
+
+    <div id="status"></div>
+
+    <div id="recapBox" class="check-box" style="display:none;">
+      <h3 id="participantNom" style="margin:0 0 6px 0;"></h3>
+      <div id="participantNb" style="font-size:15px; color:#475569; margin-bottom:10px;"></div>
+      <button class="btn btn-valider" id="btnValider" onclick="validerPassage()">Valider le Passage</button>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURATION DU POSTE (ravito1, ravito2, arrivee)
+    const POSTE_ID = "arrivee"; 
+    const SCRIPT_URL = "VOTRE_URL_GOOGLE_APPS_SCRIPT_ICI";
+
+    let participantCourant = null;
+    let html5QrCode = null;
+
+    document.getElementById("titrePoste").textContent = 
+      POSTE_ID === "arrivee" ? "🏁 Poste Arrivée" : "🍎 " + POSTE_ID.toUpperCase();
+
+    function ouvrirScan() {
+      const reader = document.getElementById("reader");
+      reader.style.display = "block";
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (num) => {
+          html5QrCode.stop().then(() => reader.style.display = "none");
+          chercher(num.trim());
+        },
+        () => {}
+      );
+    }
+
+    function chercher(num) {
+      if (!num) return;
+      document.getElementById("status").textContent = "Recherche...";
+      document.getElementById("recapBox").style.display = "none";
+
+      fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.found) {
+            participantCourant = d.numero;
+            document.getElementById("participantNom").textContent = d.nom + " " + d.prenom;
+            document.getElementById("participantNb").textContent = "Groupe de " + d.nbPersonnes + " personne(s)";
+            document.getElementById("recapBox").style.display = "block";
+            document.getElementById("status").textContent = "";
+          } else {
+            document.getElementById("status").style.color = "red";
+            document.getElementById("status").textContent = "Dossard introuvable.";
+          }
+        });
+    }
+
+    function validerPassage() {
+      const btn = document.getElementById("btnValider");
+      btn.disabled = true;
+      document.getElementById("status").textContent = "Enregistrement en cours...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "pointage", poste: POSTE_ID, numero: participantCourant })
+      }).then(() => {
+        document.getElementById("status").style.color = "green";
+        document.getElementById("status").textContent = "Passage validé !";
+        document.getElementById("recapBox").style.display = "none";
+        document.getElementById("manualNum").value = "";
+        btn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
