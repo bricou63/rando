@@ -183,7 +183,7 @@
         <input type="text" id="depSearch" placeholder="N° Dossard..." style="flex:1;">
         <button class="btn btn-primary" type="button" onclick="declencherRechercheDepart()">Chercher</button>
       </div>
-      <div id="reader-depart" style="display:none; width:100%; height:200px; margin-bottom:10px;"></div>
+      <div id="reader-depart" style="display:none; width:100%; margin-bottom:10px;"></div>
 
       <form id="formDepart">
         <input type="hidden" id="depNbInitial">
@@ -217,7 +217,7 @@
         <input type="text" id="arrSearch" placeholder="N° Dossard..." style="flex:1;">
         <button class="btn btn-primary" type="button" onclick="declencherRechercheArrivee()">Chercher</button>
       </div>
-      <div id="reader-arrivee" style="display:none; width:100%; height:200px; margin-bottom:10px;"></div>
+      <div id="reader-arrivee" style="display:none; width:100%; margin-bottom:10px;"></div>
 
       <div id="arrBox" style="background:#f1f5f9; border:1px solid var(--border); padding:16px; border-radius:8px; display:none;">
         <p style="margin:0 0 8px 0; font-size:16px;">Participant : <strong id="arrNom"></strong> (<span id="arrNb"></span> pers.)</p>
@@ -257,34 +257,62 @@
 
     // Scanner Webcam
 // Scanner Webcam optimisé pour PC
-    function startScanner(cible) {
+let activeScanner = null;
+    let isStopping = false;
+
+    async function stopActiveScanner() {
+      if (activeScanner) {
+        try {
+          await activeScanner.stop();
+          activeScanner.clear(); // Nettoie complètement les balises résiduelles
+        } catch (e) {
+          // Ignore si déjà arrêté
+        }
+        activeScanner = null;
+      }
+      // Masquer et vider les deux conteneurs
+      const rd = document.getElementById("reader-depart");
+      const ra = document.getElementById("reader-arrivee");
+      if (rd) { rd.style.display = "none"; rd.innerHTML = ""; }
+      if (ra) { ra.style.display = "none"; ra.innerHTML = ""; }
+    }
+
+    async function startScanner(cible) {
+      if (isStopping) return;
+      
       const readerId = "reader-" + cible;
       const el = document.getElementById(readerId);
-      el.style.display = "block";
 
-      if (activeScanner) {
-        activeScanner.stop().catch(() => {});
+      // Si le scanner cliqué est déjà ouvert, on le referme
+      if (activeScanner && el.style.display === "block") {
+        await stopActiveScanner();
+        return;
       }
-      
+
+      // Arrêt propre de tout scanner précédent
+      await stopActiveScanner();
+
+      el.style.display = "block";
       activeScanner = new Html5Qrcode(readerId);
 
       const config = {
         fps: 15,
-        // qrbox dynamique : prend 70% de la largeur/hauteur sans écraser le ratio
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const edgeSize = Math.floor(minEdge * 0.75);
-          return { width: edgeSize, height: edgeSize };
-        },
-        aspectRatio: 1.777778 // Ratio 16:9 standard webcam
+        // Carré parfait de 220x220 px centré
+        qrbox: { width: 220, height: 220 },
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
       };
 
       activeScanner.start(
         { facingMode: "user" },
         config,
-        (decodedNum) => {
-          activeScanner.stop().then(() => { el.style.display = "none"; });
+        async (decodedNum) => {
+          isStopping = true;
           const num = decodedNum.trim();
+          await stopActiveScanner();
+          isStopping = false;
+
           if (cible === 'depart') {
             document.getElementById("depSearch").value = num;
             chargerParticipantDepart(num);
@@ -294,9 +322,10 @@
             chargerParticipantArrivee(num);
           }
         },
-        () => {} // Ignorer les échecs frame par frame
+        () => {} // Ignorer les frames sans QR code
       ).catch(err => {
-        alert("Impossible d'activer la caméra. Vérifiez les autorisations.");
+        alert("Impossible d'accéder à la webcam : " + err);
+        stopActiveScanner();
       });
     }
 
