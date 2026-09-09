@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulaire d'enregistrement</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 20px; max-width: 400px; margin: auto; }
+    input, button { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; font-size: 16px; }
+    button { background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>Ajouter une personne</h2>
+  <form id="monForm">
+    <input type="text" id="nom" placeholder="Nom" required>
+    <input type="text" id="prenom" placeholder="Prénom" required>
+    <button type="submit" id="btnSubmit">Enregistrer</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    // Remplacez cette URL par celle obtenue à l'étape 3
+    const SCRIPT_URL = "VOTRE_URL_GOOGLE_APPS_SCRIPT_ICI";
+
+    document.getElementById("monForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btnSubmit");
+      const msg = document.getElementById("message");
+      
+      btn.disabled = true;
+      msg.textContent = "Enregistrement en cours...";
+
+      const payload = {
+        nom: document.getElementById("nom").value,
+        prenom: document.getElementById("prenom").value
+      };
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        msg.textContent = "Enregistré avec succès !";
+        document.getElementById("monForm").reset();
+      })
+      .catch(err => {
+        msg.textContent = "Erreur lors de l'enregistrement.";
+      })
+      .finally(() => {
+        btn.disabled = false;
+      });
+    });
+  </script>
+
+</body>
+</html>
