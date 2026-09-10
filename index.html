@@ -68,7 +68,26 @@
     let billetsScannes = []; // Liste des objets {ticket, nom, prenom, email}
     let ticketsSet = new Set();
     let scanEnPause = false;
+function extraireNumeroBillet(texteScanne) {
+  var texte = texteScanne.trim();
+  
+  // Si c'est déjà un numéro simple (saisie manuelle ou autre)
+  if (/^\d+$/.test(texte)) {
+    return texte;
+  }
 
+  // Si c'est une chaîne Base64 HelloAsso
+  try {
+    var decodage = atob(texte); // Décode le Base64
+    if (decodage.indexOf(":") !== -1) {
+      return decodage.split(":")[0].trim(); // Récupère le "203492895"
+    }
+  } catch (e) {
+    // Si ce n'est pas du Base64 valide, on garde le texte brut
+  }
+
+  return texte;
+}
     function demarrerScanGroupe() {
       billetsScannes = [];
       ticketsSet.clear();
