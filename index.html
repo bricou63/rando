@@ -2,69 +2,77 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Départ - Enregistrement</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root { --primary: #2563eb; --success: #16a34a; --bg: #f8fafc; --text: #0f172a; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 14px; display: flex; justify-content: center; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 14px; display: flex; justify-content: center; }
     .card { background: white; width: 100%; max-width: 440px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); box-sizing: border-box; }
-    h2 { text-align: center; margin-top: 0; }
-    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+    h2 { text-align: center; margin-top: 0; font-size: 20px; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; display: block; text-align: center; box-sizing: border-box; }
     .btn-qr { background: #0f172a; color: white; }
     .btn-man { background: #e2e8f0; color: #1e293b; }
     .btn-success { background: var(--success); color: white; margin-top: 10px; }
-    #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: none; }
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: none; background: #000; }
     .scanned-list { background: #f1f5f9; border-radius: 8px; padding: 10px; margin: 10px 0; max-height: 180px; overflow-y: auto; }
     .scanned-item { font-size: 14px; padding: 6px; border-bottom: 1px solid #cbd5e1; display: flex; justify-content: space-between; }
-    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
+    label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px; }
+    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; margin-bottom: 12px; box-sizing: border-box; }
     #status { text-align: center; font-weight: 600; margin: 10px 0; font-size: 14px; }
-    .toast-success { background: #dcfce7; color: #166534; padding: 14px; border-radius: 8px; font-weight: 700; text-align: center; margin-bottom: 14px; display: none; border: 1px solid #86efac; }
+    .toast-box { background: #dcfce7; color: #166534; padding: 14px; border-radius: 8px; font-weight: 600; text-align: center; margin-bottom: 14px; display: none; border: 1px solid #86efac; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>🚩 Enregistrement Départ</h2>
-    <div id="toastSuccess" class="toast-success"></div>
+    
+    <!-- Message de confirmation sans popup -->
+    <div id="toastMessage" class="toast-box"></div>
 
+    <!-- Accueil -->
     <div id="choixBox">
-      <button class="btn btn-qr" onclick="demarrerScanGroupe()">📷 Nouveau Groupe QR Code</button>
-      <button class="btn btn-man" onclick="ouvrirManuel()">✍️ Nouveau Groupe Manuel</button>
+      <button class="btn btn-qr" type="button" onclick="demarrerScanGroupe()">📷 Nouveau Groupe QR Code</button>
+      <button class="btn btn-man" type="button" onclick="ouvrirManuel()">✍️ Nouveau Groupe Manuel</button>
     </div>
 
     <div id="reader"></div>
     <div id="status"></div>
 
-    <!-- Mode QR -->
+    <!-- Section QR Code -->
     <div id="sectionQR" style="display:none;">
       <div style="font-weight:700; font-size:15px;" id="countText">Groupe : 0 personne(s)</div>
       <div class="scanned-list" id="membersList"></div>
       
       <div id="telBoxQR" style="display:none; margin-top:10px;">
-        <label style="font-size:13px; font-weight:600;">Numéro de téléphone *</label>
-        <input type="tel" id="telInputQR" placeholder="06 12 34 56 78" required>
-        <button class="btn btn-success" id="btnValiderQR" onclick="soumettreGroupeQR()">✅ Valider et Lancer le Départ</button>
+        <label>Numéro de téléphone *</label>
+        <input type="tel" id="telInputQR" placeholder="06 12 34 56 78">
+        <button class="btn btn-success" type="button" id="btnValiderQR" onclick="soumettreGroupeQR()">✅ Valider et Lancer le Départ</button>
       </div>
-      <button class="btn btn-qr" id="btnDemanderTel" onclick="passerAuTelephone()">Terminer les scans et Valider</button>
+      <button class="btn btn-qr" type="button" id="btnDemanderTel" onclick="passerAuTelephone()">Terminer les scans et Valider</button>
+      <button class="btn btn-man" type="button" onclick="resetForm()">Annuler</button>
     </div>
 
-    <!-- Mode Manuel -->
-    <div id="sectionManuel" style="display:none;">
-      <label style="font-size:13px; font-weight:600;">Nom *</label>
+    <!-- Section Manuel -->
+    <form id="formManuel" style="display:none;" onsubmit="soumettreGroupeManuel(event)">
+      <label>Nom *</label>
       <input type="text" id="manNom" required>
-      <label style="font-size:13px; font-weight:600;">Prénom *</label>
+      <label>Prénom *</label>
       <input type="text" id="manPrenom" required>
-      <label style="font-size:13px; font-weight:600;">Téléphone *</label>
+      <label>Téléphone *</label>
       <input type="tel" id="manTel" placeholder="06..." required>
-      <label style="font-size:13px; font-weight:600;">Nombre de personnes *</label>
+      <label>Nombre de personnes *</label>
       <input type="number" id="manNb" min="1" value="1" required>
-      <button class="btn btn-success" id="btnValiderMan" onclick="soumettreGroupeManuel()">✅ Valider le Départ</button>
-      <button class="btn btn-man" onclick="resetForm()">Annuler</button>
-    </div>
+      
+      <button class="btn btn-success" type="submit" id="btnValiderMan">✅ Valider le Départ Manuel</button>
+      <button class="btn btn-man" type="button" onclick="resetForm()">Annuler</button>
+    </form>
   </div>
 
   <script>
+    // METTEZ VOTRE URL /exec ICI
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
+
     let html5QrCode = null;
     let billetsScannes = [];
     let ticketsSet = new Set();
@@ -100,7 +108,9 @@
           if (scanEnPause || ticketsSet.has(numTicket)) return;
 
           scanEnPause = true;
-          document.getElementById("status").textContent = `Vérification billet n°${numTicket}...`;
+          const status = document.getElementById("status");
+          status.style.color = "#1e293b";
+          status.textContent = `Vérification billet n°${numTicket}...`;
 
           fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, {
             method: "GET",
@@ -112,16 +122,16 @@
               ticketsSet.add(numTicket);
               billetsScannes.push(d);
               actualiserListeVisuelle();
-              document.getElementById("status").style.color = "green";
-              document.getElementById("status").textContent = `Ajouté : ${d.prenom} ${d.nom}`;
+              status.style.color = "green";
+              status.textContent = `Ajouté : ${d.prenom} ${d.nom}`;
             } else {
-              document.getElementById("status").style.color = "red";
-              document.getElementById("status").textContent = `Billet n°${numTicket} introuvable dans HelloAsso.`;
+              status.style.color = "red";
+              status.textContent = `Billet n°${numTicket} introuvable dans HelloAsso.`;
             }
           })
           .catch(() => {
-            document.getElementById("status").style.color = "red";
-            document.getElementById("status").textContent = "Erreur de connexion.";
+            status.style.color = "red";
+            status.textContent = "Erreur de communication.";
           })
           .finally(() => {
             setTimeout(() => { scanEnPause = false; }, 1200);
@@ -144,15 +154,16 @@
     }
 
     function passerAuTelephone() {
+      const status = document.getElementById("status");
       if (billetsScannes.length === 0) {
-        document.getElementById("status").style.color = "red";
-        document.getElementById("status").textContent = "Scannez au moins un billet.";
+        status.style.color = "red";
+        status.textContent = "Veuillez scanner au moins un billet.";
         return;
       }
       if (html5QrCode) {
         html5QrCode.stop().then(() => {
           document.getElementById("reader").style.display = "none";
-        });
+        }).catch(() => {});
       }
       document.getElementById("btnDemanderTel").style.display = "none";
       document.getElementById("telBoxQR").style.display = "block";
@@ -161,63 +172,76 @@
 
     function soumettreGroupeQR() {
       const tel = document.getElementById("telInputQR").value.trim();
+      const status = document.getElementById("status");
       if (!tel) {
-        document.getElementById("status").style.color = "red";
-        document.getElementById("status").textContent = "Numéro de téléphone requis.";
+        status.style.color = "red";
+        status.textContent = "Numéro de téléphone requis.";
         return;
       }
 
       const btn = document.getElementById("btnValiderQR");
       btn.disabled = true;
-      document.getElementById("status").textContent = "Enregistrement du départ...";
+      status.style.color = "#1e293b";
+      status.textContent = "Enregistrement du départ...";
 
       const referent = billetsScannes[0];
       const listeTickets = Array.from(ticketsSet);
-      const numAttitre = listeTickets.join(", ");
+      const listeStr = listeTickets.join(", ");
 
       const payload = {
         action: "creerGroupe",
-        numeroManuel: numAttitre,
         nom: referent.nom,
         prenom: referent.prenom,
         email: referent.email,
         telephone: tel,
         nbPers: billetsScannes.length,
-        codesBillets: listeTickets.join(", ")
+        codesBillets: listeStr
       };
 
       fetch(SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       })
-      .then(r => r.json())
-      .then(res => {
-        afficherSucces(`✅ Départ validé ! N° de participation : <strong>${res.numGroupe}</strong> (${referent.nom} - ${billetsScannes.length} pers.)`);
+      .then(() => {
+        afficherSucces(`✅ Départ validé !<br>N° Participation : <strong>${listeStr}</strong><br>(${referent.nom} - ${billetsScannes.length} pers.)`);
       })
       .catch(() => {
-        afficherSucces(`✅ Départ validé ! N° de participation : <strong>${numAttitre}</strong>`);
+        status.style.color = "red";
+        status.textContent = "Erreur lors de l'envoi.";
+        btn.disabled = false;
       });
     }
 
-    function soumettreGroupeManuel() {
+    function ouvrirManuel() {
+      document.getElementById("choixBox").style.display = "none";
+      document.getElementById("formManuel").style.display = "block";
+      document.getElementById("manNom").focus();
+    }
+
+    function soumettreGroupeManuel(e) {
+      e.preventDefault();
       const nom = document.getElementById("manNom").value.trim();
       const prenom = document.getElementById("manPrenom").value.trim();
       const tel = document.getElementById("manTel").value.trim();
       const nb = document.getElementById("manNb").value;
+      const status = document.getElementById("status");
 
       if (!nom || !prenom || !tel || !nb) {
-        document.getElementById("status").style.color = "red";
-        document.getElementById("status").textContent = "Remplissez tous les champs.";
+        status.style.color = "red";
+        status.textContent = "Remplissez tous les champs obligatoires.";
         return;
       }
 
       const btn = document.getElementById("btnValiderMan");
       btn.disabled = true;
-      document.getElementById("status").textContent = "Enregistrement...";
+      status.style.color = "#1e293b";
+      status.textContent = "Enregistrement du départ...";
 
       fetch(SCRIPT_URL, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "creerGroupe",
@@ -228,21 +252,22 @@
           codesBillets: ""
         })
       })
-      .then(r => r.json())
-      .then(res => {
-        afficherSucces(`✅ Départ validé ! N° de participation attribué : <strong>${res.numGroupe}</strong> (${prenom} ${nom})`);
+      .then(() => {
+        afficherSucces(`✅ Départ manuel validé pour <strong>${prenom} ${nom}</strong> (${nb} pers.) !<br>Numéro attribué automatiquement.`);
       })
       .catch(() => {
-        afficherSucces(`✅ Départ validé pour ${prenom} ${nom} !`);
+        status.style.color = "red";
+        status.textContent = "Erreur lors de l'envoi.";
+        btn.disabled = false;
       });
     }
 
     function afficherSucces(messageHtml) {
-      const toast = document.getElementById("toastSuccess");
+      const toast = document.getElementById("toastMessage");
       toast.innerHTML = messageHtml;
       toast.style.display = "block";
       resetForm();
-      setTimeout(() => { toast.style.display = "none"; }, 6000);
+      setTimeout(() => { toast.style.display = "none"; }, 7000);
     }
 
     function resetForm() {
@@ -251,18 +276,17 @@
       }
       document.getElementById("reader").style.display = "none";
       document.getElementById("sectionQR").style.display = "none";
-      document.getElementById("sectionManuel").style.display = "none";
+      document.getElementById("formManuel").style.display = "none";
       document.getElementById("choixBox").style.display = "block";
       document.getElementById("status").textContent = "";
       document.getElementById("telInputQR").value = "";
-      document.getElementById("manNom").value = "";
-      document.getElementById("manPrenom").value = "";
-      document.getElementById("manTel").value = "";
+      document.getElementById("formManuel").reset();
       document.getElementById("manNb").value = "1";
       document.getElementById("btnValiderQR").disabled = false;
       document.getElementById("btnValiderMan").disabled = false;
       billetsScannes = [];
       ticketsSet.clear();
+      scanEnPause = false;
     }
   </script>
 </body>
