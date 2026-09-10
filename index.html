@@ -3,125 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poste Départ (Mobile)</title>
+  <title>Départ - Création Groupe</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 16px; display: flex; justify-content: center; }
-    .container { background: var(--card); width: 100%; max-width: 440px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    :root { --primary: #2563eb; --success: #16a34a; --bg: #f8fafc; --text: #0f172a; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 14px; display: flex; justify-content: center; }
+    .card { background: white; width: 100%; max-width: 440px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); box-sizing: border-box; }
+    h2 { text-align: center; margin-top: 0; }
     .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
     .btn-qr { background: #0f172a; color: white; }
-    .btn-manual { background: #e2e8f0; color: #1e293b; }
-    .btn-submit { background: var(--primary); color: white; margin-top: 14px; }
-    #reader { width: 100%; border-radius: 8px; margin-bottom: 12px; display: none; }
-    .row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .col { flex: 1; }
-    label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; }
-    input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+    .btn-man { background: #e2e8f0; color: #1e293b; }
+    .btn-success { background: var(--success); color: white; margin-top: 10px; }
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: none; }
+    .scanned-list { background: #f1f5f9; border-radius: 8px; padding: 10px; margin: 10px 0; max-height: 180px; overflow-y: auto; }
+    .scanned-item { font-size: 14px; padding: 6px; border-bottom: 1px solid #cbd5e1; display: flex; justify-content: space-between; }
+    input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
     #status { text-align: center; font-weight: 600; margin: 10px 0; font-size: 14px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2 style="text-align:center; margin-top:0;">🚩 Poste Départ</h2>
+  <div class="card">
+    <h2>🚩 Enregistrement Départ</h2>
 
-    <!-- Écran d'accueil mobile avec 2 boutons -->
-    <div id="homeChoices">
-      <button class="btn btn-qr" onclick="ouvrirScan()">📷 Scanner un QR Code</button>
-      <button class="btn btn-manual" onclick="ouvrirManuel()">✍️ Remplissage Manuel</button>
+    <!-- Choix initial -->
+    <div id="choixBox">
+      <button class="btn btn-qr" onclick="demarrerScanGroupe()">📷 Nouveau Groupe QR Code</button>
+      <button class="btn btn-man" onclick="ouvrirManuel()">✍️ Nouveau Groupe Manuel</button>
     </div>
 
     <div id="reader"></div>
     <div id="status"></div>
 
-    <!-- Formulaire d'enregistrement -->
-    <form id="formDepart" style="display:none;">
-      <input type="hidden" id="nbInitial">
-      <div class="row">
-        <div class="col"><label>N° Dossard *</label><input type="text" id="numero" required></div>
-        <div class="col"><label>Nb personnes *</label><input type="number" id="nbPersonnes" min="1" required></div>
+    <!-- Section Groupe QR en cours -->
+    <div id="sectionQR" style="display:none;">
+      <div style="font-weight:700; font-size:15px;" id="countText">Groupe : 0 personne(s)</div>
+      <div class="scanned-list" id="membersList"></div>
+      
+      <div id="telBoxQR" style="display:none; margin-top:10px;">
+        <label style="font-size:13px; font-weight:600;">Numéro de téléphone du référent *</label>
+        <input type="tel" id="telInputQR" placeholder="06 12 34 56 78" required>
+        <button class="btn btn-success" id="btnValiderQR" onclick="soumettreGroupeQR()">✅ Valider et Lancer le Départ</button>
       </div>
-      <div class="row">
-        <div class="col"><label>Nom</label><input type="text" id="nom"></div>
-        <div class="col"><label>Prénom</label><input type="text" id="prenom"></div>
-      </div>
-      <div class="row">
-        <div class="col"><label>Email</label><input type="email" id="email"></div>
-        <div class="col"><label>Téléphone</label><input type="tel" id="tel"></div>
-      </div>
-      <div style="margin-top: 6px;">
-        <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-          <input type="checkbox" id="sendEmail" checked style="width:auto;"> Envoyer email de confirmation
-        </label>
-      </div>
-      <button type="submit" class="btn btn-submit" id="btnSubmit">Valider le Départ</button>
-    </form>
+      <button class="btn btn-qr" id="btnDemanderTel" onclick="passerAuTelephone()">Terminer les scans et Valider</button>
+    </div>
+
+    <!-- Section Groupe Manuel -->
+    <div id="sectionManuel" style="display:none;">
+      <label style="font-size:13px; font-weight:600;">Nom *</label>
+      <input type="text" id="manNom" required>
+      <label style="font-size:13px; font-weight:600;">Prénom *</label>
+      <input type="text" id="manPrenom" required>
+      <label style="font-size:13px; font-weight:600;">Téléphone *</label>
+      <input type="tel" id="manTel" required>
+      <label style="font-size:13px; font-weight:600;">Nombre de personnes *</label>
+      <input type="number" id="manNb" min="1" value="1" required>
+      <button class="btn btn-success" id="btnValiderMan" onclick="soumettreGroupeManuel()">✅ Valider le Départ Manuel</button>
+      <button class="btn btn-man" onclick="retourAccueil()">Annuler</button>
+    </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
     let html5QrCode = null;
+    let billetsScannes = []; // Liste des objets {ticket, nom, prenom, email}
+    let ticketsSet = new Set();
+    let scanEnPause = false;
 
-    function ouvrirScan() {
-      const reader = document.getElementById("reader");
-      reader.style.display = "block";
+    function demarrerScanGroupe() {
+      billetsScannes = [];
+      ticketsSet.clear();
+      document.getElementById("choixBox").style.display = "none";
+      document.getElementById("sectionQR").style.display = "block";
+      document.getElementById("membersList").innerHTML = "";
+      document.getElementById("countText").textContent = "Groupe : 0 personne(s)";
+      document.getElementById("reader").style.display = "block";
+
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
-        (num) => {
-          html5QrCode.stop().then(() => reader.style.display = "none");
-          chercherParticipant(num.trim());
+        (decodedText) => {
+          const numTicket = decodedText.trim();
+          if (scanEnPause || ticketsSet.has(numTicket)) return;
+
+          scanEnPause = true;
+          document.getElementById("status").textContent = `Vérification billet n°${numTicket}...`;
+
+          fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, {
+            method: "GET",
+            redirect: "follow"
+          })
+          .then(r => r.json())
+          .then(d => {
+            if (d.found) {
+              ticketsSet.add(numTicket);
+              billetsScannes.push(d);
+              actualiserListeVisuelle();
+              document.getElementById("status").style.color = "green";
+              document.getElementById("status").textContent = `Ajouté : ${d.prenom} ${d.nom}`;
+            } else {
+              document.getElementById("status").style.color = "red";
+              document.getElementById("status").textContent = `Billet n°${numTicket} introuvable dans HelloAsso.`;
+            }
+          })
+          .catch(() => {
+            document.getElementById("status").style.color = "red";
+            document.getElementById("status").textContent = "Erreur de connexion.";
+          })
+          .finally(() => {
+            setTimeout(() => { scanEnPause = false; }, 1200);
+          });
         },
         () => {}
       );
     }
 
-    function ouvrirManuel() {
-      document.getElementById("formDepart").style.display = "block";
-      document.getElementById("numero").focus();
+    function actualiserListeVisuelle() {
+      const listEl = document.getElementById("membersList");
+      listEl.innerHTML = "";
+      billetsScannes.forEach((b, idx) => {
+        const item = document.createElement("div");
+        item.className = "scanned-item";
+        item.innerHTML = `<span><strong>${idx+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span>`;
+        listEl.appendChild(item);
+      });
+      document.getElementById("countText").textContent = `Groupe : ${billetsScannes.length} personne(s)`;
     }
 
-    function chercherParticipant(num) {
-      document.getElementById("status").textContent = "Recherche participant...";
-      fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`)
-        .then(r => r.json())
-        .then(d => {
-          document.getElementById("formDepart").style.display = "block";
-          document.getElementById("numero").value = num;
-          if (d.found) {
-            document.getElementById("nom").value = d.nom;
-            document.getElementById("prenom").value = d.prenom;
-            document.getElementById("nbPersonnes").value = d.nbPersonnes;
-            document.getElementById("nbInitial").value = d.nbPersonnes;
-            document.getElementById("email").value = d.email;
-            document.getElementById("tel").value = d.telephone;
-            document.getElementById("status").style.color = "green";
-            document.getElementById("status").textContent = "Participant trouvé !";
-          } else {
-            document.getElementById("nbInitial").value = "";
-            document.getElementById("status").style.color = "orange";
-            document.getElementById("status").textContent = "Dossard introuvable, saisie manuelle.";
-          }
+    function passerAuTelephone() {
+      if (billetsScannes.length === 0) {
+        alert("Scannez au moins un billet avant de valider.");
+        return;
+      }
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          document.getElementById("reader").style.display = "none";
         });
+      }
+      document.getElementById("btnDemanderTel").style.display = "none";
+      document.getElementById("telBoxQR").style.display = "block";
+      document.getElementById("telInputQR").focus();
     }
 
-    document.getElementById("formDepart").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const btn = document.getElementById("btnSubmit");
-      btn.disabled = true;
-      document.getElementById("status").textContent = "Validation du départ en cours...";
+    function soumettreGroupeQR() {
+      const tel = document.getElementById("telInputQR").value.trim();
+      if (!tel) { alert("Le numéro de téléphone est obligatoire."); return; }
 
+      const btn = document.getElementById("btnValiderQR");
+      btn.disabled = true;
+      document.getElementById("status").textContent = "Enregistrement en cours...";
+
+      const referent = billetsScannes[0];
       const payload = {
-        action: "depart",
-        numero: document.getElementById("numero").value,
-        nom: document.getElementById("nom").value,
-        prenom: document.getElementById("prenom").value,
-        nbPersonnes: document.getElementById("nbPersonnes").value,
-        nbInitial: document.getElementById("nbInitial").value,
-        email: document.getElementById("email").value,
-        telephone: document.getElementById("tel").value,
-        sendEmail: document.getElementById("sendEmail").checked
+        action: "creerGroupe",
+        nom: referent.nom,
+        prenom: referent.prenom,
+        email: referent.email,
+        telephone: tel,
+        nbPers: billetsScannes.length,
+        codesBillets: Array.from(ticketsSet).join(", ")
       };
 
       fetch(SCRIPT_URL, {
@@ -130,13 +170,47 @@
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       }).then(() => {
-        document.getElementById("status").style.color = "green";
-        document.getElementById("status").textContent = "Départ validé avec succès !";
-        document.getElementById("formDepart").reset();
-        document.getElementById("formDepart").style.display = "none";
-        btn.disabled = false;
+        alert("Groupe enregistré et départ validé !");
+        location.reload();
       });
-    });
+    }
+
+    function ouvrirManuel() {
+      document.getElementById("choixBox").style.display = "none";
+      document.getElementById("sectionManuel").style.display = "block";
+    }
+
+    function soumettreGroupeManuel() {
+      const nom = document.getElementById("manNom").value.trim();
+      const prenom = document.getElementById("manPrenom").value.trim();
+      const tel = document.getElementById("manTel").value.trim();
+      const nb = document.getElementById("manNb").value;
+
+      if (!nom || !prenom || !tel || !nb) { alert("Veuillez remplir tous les champs."); return; }
+
+      const btn = document.getElementById("btnValiderMan");
+      btn.disabled = true;
+      document.getElementById("status").textContent = "Enregistrement en cours...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "creerGroupe",
+          nom: nom,
+          prenom: prenom,
+          telephone: tel,
+          nbPers: parseInt(nb),
+          codesBillets: ""
+        })
+      }).then(() => {
+        alert("Groupe manuel validé ! Un numéro lui a été attribué.");
+        location.reload();
+      });
+    }
+
+    function retourAccueil() { location.reload(); }
   </script>
 </body>
 </html>
