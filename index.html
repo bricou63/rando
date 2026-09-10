@@ -220,7 +220,7 @@
       document.getElementById("manNom").focus();
     }
 
-    function soumettreGroupeManuel(e) {
+  function soumettreGroupeManuel(e) {
       e.preventDefault();
       const nom = document.getElementById("manNom").value.trim();
       const prenom = document.getElementById("manPrenom").value.trim();
@@ -241,7 +241,7 @@
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
+        redirect: "follow",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "creerGroupe",
@@ -252,16 +252,22 @@
           codesBillets: ""
         })
       })
-      .then(() => {
-        afficherSucces(`✅ Départ manuel validé pour <strong>${prenom} ${nom}</strong> (${nb} pers.) !<br>Numéro attribué automatiquement.`);
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.success) {
+          afficherSucces(`✅ Départ manuel validé !<br>N° de participation attribué : <strong style="font-size: 20px;">${res.numGroupe}</strong><br>(${prenom} ${nom} — ${nb} pers.)`);
+        } else {
+          status.style.color = "red";
+          status.textContent = "Erreur : " + (res.error || "impossible d'enregistrer.");
+          btn.disabled = false;
+        }
       })
       .catch(() => {
         status.style.color = "red";
-        status.textContent = "Erreur lors de l'envoi.";
+        status.textContent = "Erreur de communication avec le serveur.";
         btn.disabled = false;
       });
     }
-
     function afficherSucces(messageHtml) {
       const toast = document.getElementById("toastMessage");
       toast.innerHTML = messageHtml;
