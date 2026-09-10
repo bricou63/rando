@@ -6,103 +6,108 @@
   <title>Pointage Poste</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root { --primary: #059669; --bg: #f8fafc; --card: #ffffff; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 16px; display: flex; justify-content: center; }
-    .container { background: var(--card); width: 100%; max-width: 420px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    :root { --primary: #059669; --bg: #f8fafc; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); margin: 0; padding: 14px; display: flex; justify-content: center; }
+    .card { background: white; width: 100%; max-width: 420px; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
     .btn-qr { background: #0f172a; color: white; margin-bottom: 12px; }
-    .btn-valider { background: var(--primary); color: white; font-size: 18px; margin-top: 14px; }
-    #reader { width: 100%; border-radius: 8px; margin-bottom: 12px; display: none; }
-    .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
-    input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+    .btn-val { background: var(--primary); color: white; font-size: 18px; margin-top: 14px; }
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 12px; display: none; }
+    .search-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; }
     .search-btn { padding: 0 16px; background: #334155; color: white; border: none; border-radius: 6px; font-weight: 600; }
-    .check-box { background: #f1f5f9; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #cbd5e1; }
-    #status { text-align: center; font-weight: 600; margin: 12px 0; font-size: 14px; }
+    .info-box { background: #f1f5f9; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #cbd5e1; }
+    #status { text-align: center; font-weight: 600; margin: 10px 0; }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="card">
     <h2 id="titrePoste" style="text-align:center; margin-top:0;">Pointage</h2>
 
-    <button class="btn btn-qr" onclick="ouvrirScan()">📷 Scanner QR Code</button>
+    <button class="btn btn-qr" onclick="ouvrirScanner()">📷 Scanner Billet / QR</button>
     <div id="reader"></div>
 
     <div class="search-row">
-      <input type="text" id="manualNum" placeholder="N° Dossard manuel...">
-      <button class="search-btn" onclick="chercher(document.getElementById('manualNum').value)">OK</button>
+      <input type="text" id="manualQuery" placeholder="Ou N° Billet / N° Groupe...">
+      <button class="search-btn" onclick="chercherGroupe(document.getElementById('manualQuery').value)">OK</button>
     </div>
 
     <div id="status"></div>
 
-    <div id="recapBox" class="check-box" style="display:none;">
-      <h3 id="participantNom" style="margin:0 0 6px 0;"></h3>
-      <div id="participantNb" style="font-size:15px; color:#475569; margin-bottom:10px;"></div>
-      <button class="btn btn-valider" id="btnValider" onclick="validerPassage()">Valider le Passage</button>
+    <div id="recapBox" class="info-box" style="display:none;">
+      <div style="font-size:13px; color:#64748b;" id="dispGroupeNum"></div>
+      <h3 id="dispNom" style="margin:6px 0;"></h3>
+      <div id="dispNb" style="font-size:16px; font-weight:600; color:#1e293b;"></div>
+      <button class="btn btn-val" id="btnValider" onclick="validerPassage()">Valider le Passage</button>
     </div>
   </div>
 
   <script>
-    // CONFIGURATION DU POSTE (ravito1, ravito2, arrivee)
+    // CONFIGURATION : "ravito1", "ravito2" ou "arrivee"
     const POSTE_ID = "ravito1"; 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
 
-    let participantCourant = null;
+    let groupeTrouve = null;
     let html5QrCode = null;
 
     document.getElementById("titrePoste").textContent = 
-      POSTE_ID === "arrivee" ? "🏁 Poste Arrivée" : "🍎 " + POSTE_ID.toUpperCase();
+      POSTE_ID === "arrivee" ? "🏁 Poste Arrivée" : "🍎 Poste " + POSTE_ID.toUpperCase();
 
-    function ouvrirScan() {
+    function ouvrirScanner() {
       const reader = document.getElementById("reader");
       reader.style.display = "block";
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
-        (num) => {
+        (decodedText) => {
           html5QrCode.stop().then(() => reader.style.display = "none");
-          chercher(num.trim());
+          chercherGroupe(decodedText.trim());
         },
         () => {}
       );
     }
 
-    function chercher(num) {
-      if (!num) return;
-      document.getElementById("status").textContent = "Recherche...";
+    function chercherGroupe(query) {
+      if (!query) return;
+      document.getElementById("status").textContent = "Recherche du groupe...";
       document.getElementById("recapBox").style.display = "none";
 
-      fetch(`${SCRIPT_URL}?numero=${encodeURIComponent(num)}`)
-        .then(r => r.json())
-        .then(d => {
-          if (d.found) {
-            participantCourant = d.numero;
-            document.getElementById("participantNom").textContent = d.nom + " " + d.prenom;
-            document.getElementById("participantNb").textContent = "Groupe de " + d.nbPersonnes + " personne(s)";
-            document.getElementById("recapBox").style.display = "block";
-            document.getElementById("status").textContent = "";
-          } else {
-            document.getElementById("status").style.color = "red";
-            document.getElementById("status").textContent = "Dossard introuvable.";
-          }
-        });
+      fetch(`${SCRIPT_URL}?action=findGroupe&query=${encodeURIComponent(query)}`, {
+        method: "GET",
+        redirect: "follow"
+      })
+      .then(r => r.json())
+      .then(d => {
+        if (d.found) {
+          groupeTrouve = d;
+          document.getElementById("dispGroupeNum").textContent = `GROUPE N° ${d.numGroupe}`;
+          document.getElementById("dispNom").textContent = `${d.nom} ${d.prenom}`;
+          document.getElementById("dispNb").textContent = `Effectif : ${d.nbPers} personne(s)`;
+          document.getElementById("recapBox").style.display = "block";
+          document.getElementById("status").textContent = "";
+        } else {
+          document.getElementById("status").style.color = "red";
+          document.getElementById("status").textContent = "Groupe ou billet non reconnu.";
+        }
+      });
     }
 
     function validerPassage() {
       const btn = document.getElementById("btnValider");
       btn.disabled = true;
-      document.getElementById("status").textContent = "Enregistrement en cours...";
+      document.getElementById("status").textContent = "Validation en cours...";
 
       fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "pointage", poste: POSTE_ID, numero: participantCourant })
+        body: JSON.stringify({ action: "pointerPassage", poste: POSTE_ID, numGroupe: groupeTrouve.numGroupe })
       }).then(() => {
         document.getElementById("status").style.color = "green";
         document.getElementById("status").textContent = "Passage validé !";
         document.getElementById("recapBox").style.display = "none";
-        document.getElementById("manualNum").value = "";
+        document.getElementById("manualQuery").value = "";
         btn.disabled = false;
       });
     }
