@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Départ - Création Groupe</title>
+  <title>Départ - Enregistrement</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root { --primary: #2563eb; --success: #16a34a; --bg: #f8fafc; --text: #0f172a; }
@@ -19,13 +19,14 @@
     .scanned-item { font-size: 14px; padding: 6px; border-bottom: 1px solid #cbd5e1; display: flex; justify-content: space-between; }
     input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; }
     #status { text-align: center; font-weight: 600; margin: 10px 0; font-size: 14px; }
+    .toast-success { background: #dcfce7; color: #166534; padding: 14px; border-radius: 8px; font-weight: 700; text-align: center; margin-bottom: 14px; display: none; border: 1px solid #86efac; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>🚩 Enregistrement Départ</h2>
+    <div id="toastSuccess" class="toast-success"></div>
 
-    <!-- Choix initial -->
     <div id="choixBox">
       <button class="btn btn-qr" onclick="demarrerScanGroupe()">📷 Nouveau Groupe QR Code</button>
       <button class="btn btn-man" onclick="ouvrirManuel()">✍️ Nouveau Groupe Manuel</button>
@@ -34,65 +35,58 @@
     <div id="reader"></div>
     <div id="status"></div>
 
-    <!-- Section Groupe QR en cours -->
+    <!-- Mode QR -->
     <div id="sectionQR" style="display:none;">
       <div style="font-weight:700; font-size:15px;" id="countText">Groupe : 0 personne(s)</div>
       <div class="scanned-list" id="membersList"></div>
       
       <div id="telBoxQR" style="display:none; margin-top:10px;">
-        <label style="font-size:13px; font-weight:600;">Numéro de téléphone du référent *</label>
+        <label style="font-size:13px; font-weight:600;">Numéro de téléphone *</label>
         <input type="tel" id="telInputQR" placeholder="06 12 34 56 78" required>
         <button class="btn btn-success" id="btnValiderQR" onclick="soumettreGroupeQR()">✅ Valider et Lancer le Départ</button>
       </div>
       <button class="btn btn-qr" id="btnDemanderTel" onclick="passerAuTelephone()">Terminer les scans et Valider</button>
     </div>
 
-    <!-- Section Groupe Manuel -->
+    <!-- Mode Manuel -->
     <div id="sectionManuel" style="display:none;">
       <label style="font-size:13px; font-weight:600;">Nom *</label>
       <input type="text" id="manNom" required>
       <label style="font-size:13px; font-weight:600;">Prénom *</label>
       <input type="text" id="manPrenom" required>
       <label style="font-size:13px; font-weight:600;">Téléphone *</label>
-      <input type="tel" id="manTel" required>
+      <input type="tel" id="manTel" placeholder="06..." required>
       <label style="font-size:13px; font-weight:600;">Nombre de personnes *</label>
       <input type="number" id="manNb" min="1" value="1" required>
-      <button class="btn btn-success" id="btnValiderMan" onclick="soumettreGroupeManuel()">✅ Valider le Départ Manuel</button>
-      <button class="btn btn-man" onclick="retourAccueil()">Annuler</button>
+      <button class="btn btn-success" id="btnValiderMan" onclick="soumettreGroupeManuel()">✅ Valider le Départ</button>
+      <button class="btn btn-man" onclick="resetForm()">Annuler</button>
     </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
     let html5QrCode = null;
-    let billetsScannes = []; // Liste des objets {ticket, nom, prenom, email}
+    let billetsScannes = [];
     let ticketsSet = new Set();
     let scanEnPause = false;
-function extraireNumeroBillet(texteScanne) {
-  var texte = texteScanne.trim();
-  
-  // Si c'est déjà un numéro simple (saisie manuelle ou autre)
-  if (/^\d+$/.test(texte)) {
-    return texte;
-  }
 
-  // Si c'est une chaîne Base64 HelloAsso
-  try {
-    var decodage = atob(texte); // Décode le Base64
-    if (decodage.indexOf(":") !== -1) {
-      return decodage.split(":")[0].trim(); // Récupère le "203492895"
+    function extraireNumeroBillet(texteScanne) {
+      var texte = (texteScanne || "").trim();
+      if (/^\d+$/.test(texte)) return texte;
+      try {
+        var decodage = atob(texte);
+        if (decodage.indexOf(":") !== -1) return decodage.split(":")[0].trim();
+      } catch (e) {}
+      return texte;
     }
-  } catch (e) {
-    // Si ce n'est pas du Base64 valide, on garde le texte brut
-  }
 
-  return texte;
-}
     function demarrerScanGroupe() {
       billetsScannes = [];
       ticketsSet.clear();
       document.getElementById("choixBox").style.display = "none";
       document.getElementById("sectionQR").style.display = "block";
+      document.getElementById("btnDemanderTel").style.display = "block";
+      document.getElementById("telBoxQR").style.display = "none";
       document.getElementById("membersList").innerHTML = "";
       document.getElementById("countText").textContent = "Groupe : 0 personne(s)";
       document.getElementById("reader").style.display = "block";
@@ -101,7 +95,7 @@ function extraireNumeroBillet(texteScanne) {
       html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 220, height: 220 } },
-      (decodedText) => {
+        (decodedText) => {
           const numTicket = extraireNumeroBillet(decodedText);
           if (scanEnPause || ticketsSet.has(numTicket)) return;
 
@@ -151,7 +145,8 @@ function extraireNumeroBillet(texteScanne) {
 
     function passerAuTelephone() {
       if (billetsScannes.length === 0) {
-        alert("Scannez au moins un billet avant de valider.");
+        document.getElementById("status").style.color = "red";
+        document.getElementById("status").textContent = "Scannez au moins un billet.";
         return;
       }
       if (html5QrCode) {
@@ -166,37 +161,43 @@ function extraireNumeroBillet(texteScanne) {
 
     function soumettreGroupeQR() {
       const tel = document.getElementById("telInputQR").value.trim();
-      if (!tel) { alert("Le numéro de téléphone est obligatoire."); return; }
+      if (!tel) {
+        document.getElementById("status").style.color = "red";
+        document.getElementById("status").textContent = "Numéro de téléphone requis.";
+        return;
+      }
 
       const btn = document.getElementById("btnValiderQR");
       btn.disabled = true;
-      document.getElementById("status").textContent = "Enregistrement en cours...";
+      document.getElementById("status").textContent = "Enregistrement du départ...";
 
       const referent = billetsScannes[0];
+      const listeTickets = Array.from(ticketsSet);
+      const numAttitre = listeTickets.join(", ");
+
       const payload = {
         action: "creerGroupe",
+        numeroManuel: numAttitre,
         nom: referent.nom,
         prenom: referent.prenom,
         email: referent.email,
         telephone: tel,
         nbPers: billetsScannes.length,
-        codesBillets: Array.from(ticketsSet).join(", ")
+        codesBillets: listeTickets.join(", ")
       };
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
-      }).then(() => {
-        alert("Groupe enregistré et départ validé !");
-        location.reload();
+      })
+      .then(r => r.json())
+      .then(res => {
+        afficherSucces(`✅ Départ validé ! N° de participation : <strong>${res.numGroupe}</strong> (${referent.nom} - ${billetsScannes.length} pers.)`);
+      })
+      .catch(() => {
+        afficherSucces(`✅ Départ validé ! N° de participation : <strong>${numAttitre}</strong>`);
       });
-    }
-
-    function ouvrirManuel() {
-      document.getElementById("choixBox").style.display = "none";
-      document.getElementById("sectionManuel").style.display = "block";
     }
 
     function soumettreGroupeManuel() {
@@ -205,15 +206,18 @@ function extraireNumeroBillet(texteScanne) {
       const tel = document.getElementById("manTel").value.trim();
       const nb = document.getElementById("manNb").value;
 
-      if (!nom || !prenom || !tel || !nb) { alert("Veuillez remplir tous les champs."); return; }
+      if (!nom || !prenom || !tel || !nb) {
+        document.getElementById("status").style.color = "red";
+        document.getElementById("status").textContent = "Remplissez tous les champs.";
+        return;
+      }
 
       const btn = document.getElementById("btnValiderMan");
       btn.disabled = true;
-      document.getElementById("status").textContent = "Enregistrement en cours...";
+      document.getElementById("status").textContent = "Enregistrement...";
 
       fetch(SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "creerGroupe",
@@ -223,13 +227,43 @@ function extraireNumeroBillet(texteScanne) {
           nbPers: parseInt(nb),
           codesBillets: ""
         })
-      }).then(() => {
-        alert("Groupe manuel validé ! Un numéro lui a été attribué.");
-        location.reload();
+      })
+      .then(r => r.json())
+      .then(res => {
+        afficherSucces(`✅ Départ validé ! N° de participation attribué : <strong>${res.numGroupe}</strong> (${prenom} ${nom})`);
+      })
+      .catch(() => {
+        afficherSucces(`✅ Départ validé pour ${prenom} ${nom} !`);
       });
     }
 
-    function retourAccueil() { location.reload(); }
+    function afficherSucces(messageHtml) {
+      const toast = document.getElementById("toastSuccess");
+      toast.innerHTML = messageHtml;
+      toast.style.display = "block";
+      resetForm();
+      setTimeout(() => { toast.style.display = "none"; }, 6000);
+    }
+
+    function resetForm() {
+      if (html5QrCode) {
+        try { html5QrCode.stop(); } catch(e) {}
+      }
+      document.getElementById("reader").style.display = "none";
+      document.getElementById("sectionQR").style.display = "none";
+      document.getElementById("sectionManuel").style.display = "none";
+      document.getElementById("choixBox").style.display = "block";
+      document.getElementById("status").textContent = "";
+      document.getElementById("telInputQR").value = "";
+      document.getElementById("manNom").value = "";
+      document.getElementById("manPrenom").value = "";
+      document.getElementById("manTel").value = "";
+      document.getElementById("manNb").value = "1";
+      document.getElementById("btnValiderQR").disabled = false;
+      document.getElementById("btnValiderMan").disabled = false;
+      billetsScannes = [];
+      ticketsSet.clear();
+    }
   </script>
 </body>
 </html>
