@@ -106,23 +106,17 @@
       font-size: 13px;
     }
 
-    /* ZONE CAMÉRA HAUTE DÉFINITION */
+    /* ZONE CAMÉRA NATURELLE */
     .scanner-zone {
       display: none;
       width: 100%;
-      height: 250px;
       border-radius: 8px;
       overflow: hidden;
       margin-bottom: 8px;
-      background: #0f172a;
-    }
-    .scanner-zone video {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
+      background: #000;
     }
 
-    /* BANDEAUX DE FEEDBACK TRÈS VISIBLES */
+    /* BANDEAUX DE FEEDBACK VISIBLES */
     .banner-feedback {
       display: none;
       padding: 10px;
@@ -153,7 +147,7 @@
       justify-content: space-between;
     }
 
-    /* FRISE DU BAS COMPACTE */
+    /* FRISE DU BAS */
     #progress-tracker {
       position: fixed;
       bottom: 0;
@@ -207,7 +201,7 @@
       flex: 1;
     }
     
-    /* PASTILLE DE LA FRISE : NOM ET EFFECTIF SEULEMENT */
+    /* PASTILLE : NOM ET EFFECTIF SEULEMENT */
     .badge-group {
       background: #e0e7ff;
       color: #1e3a8a;
@@ -236,7 +230,7 @@
     <div class="card" style="border-top: 4px solid var(--primary);">
       <h2>🚩 Enregistrement des Départs</h2>
 
-      <!-- SECTION DÉPART QR AU-DESSUS -->
+      <!-- SECTION DÉPART QR -->
       <div class="sub-box">
         <span class="sub-title">1. Scanner le ou les billets du groupe (QR Code)</span>
         
@@ -261,7 +255,7 @@
         </div>
       </div>
 
-      <!-- SECTION DÉPART MANUEL EN DESSOUS -->
+      <!-- SECTION DÉPART MANUEL -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Ou Nouveau Départ Manuel (Sans Billet)</span>
         <form id="formManPC">
@@ -363,7 +357,7 @@
       return texte;
     }
 
-    // Gestion Caméra HD
+    // Gestion Caméra Standard & Fiable
     async function stopScanner() {
       if (activeScanner) {
         try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
@@ -392,44 +386,20 @@
 
       activeScanner = new Html5Qrcode(readerId);
 
-      // Demande explicite de haute résolution HD
-      const cameraConstraints = {
-        facingMode: "user",
-        width: { min: 1024, ideal: 1280, max: 1920 },
-        height: { min: 720, ideal: 720, max: 1080 }
-      };
-
-      const config = {
-        fps: 20,
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const size = Math.floor(minEdge * 0.75);
-          return { width: size, height: size };
-        }
-      };
-
       activeScanner.start(
-        cameraConstraints,
-        config,
+        { facingMode: "user" },
+        {
+          fps: 15,
+          qrbox: { width: 250, height: 250 }
+        },
         (decodedText) => {
           const num = extraireNumeroBillet(decodedText);
           onScanCallback(num);
         },
         () => {}
       ).catch(err => {
-        // Fallback sans contraintes si la caméra ne supporte pas le profil HD
-        activeScanner.start(
-          { facingMode: "user" },
-          { fps: 15 },
-          (decodedText) => {
-            const num = extraireNumeroBillet(decodedText);
-            onScanCallback(num);
-          },
-          () => {}
-        ).catch(e => {
-          alert("Impossible de démarrer la caméra : " + e);
-          stopScanner();
-        });
+        alert("Impossible d'accéder à la webcam : " + err);
+        stopScanner();
       });
     }
 
@@ -711,7 +681,7 @@
             const badge = document.createElement("div");
             badge.className = "badge-group";
             
-            // INFOBULLE AU SURVOL AVEC DÉTAILS COMPLETS
+            // INFOBULLE AU SURVOL AVEC TOUS LES DÉTAILS
             badge.title = `Groupe N°${p.numGroupe} - ${p.nom} ${p.prenom}\n📞 Téléphone : ${p.telephone}\nEffectif : ${nb} pers.\nDépart: ${p.depart} | R1: ${p.ravito1 || '-'} | R2: ${p.ravito2 || '-'} | Arrivée: ${p.arrivee || '-'}`;
             
             // PASTILLE ÉPURÉE : NOM ET EFFECTIF SEULEMENT
