@@ -7,119 +7,248 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
-      --primary: #2563eb; --success: #16a34a; --slate: #0f172a;
-      --bg: #f8fafc; --card: #ffffff; --border: #cbd5e1; --text: #1e293b;
+      --primary: #2563eb;
+      --success: #16a34a;
+      --slate: #0f172a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #1e293b;
     }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg); color: var(--text); margin: 0;
-      padding: 20px 20px 190px 20px; box-sizing: border-box;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px 20px 200px 20px;
+      box-sizing: border-box;
     }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    h1 { margin: 0; font-size: 24px; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+    }
     .btn {
-      padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600;
-      cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      text-decoration: none;
+      box-sizing: border-box;
     }
-    .btn-sheet { background: #059669; color: white; text-decoration: none; }
+    .btn-sheet { background: #059669; color: white; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-dark { background: var(--slate); color: white; }
     .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: #dc2626; color: white; }
     
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .card { background: var(--card); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-    h2 { margin-top: 0; font-size: 18px; border-bottom: 2px solid var(--bg); padding-bottom: 8px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 20px;
+    }
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 17px;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .row { display: flex; gap: 10px; margin-bottom: 10px; }
     .row .col { flex: 1; }
     label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; }
-    input { width: 100%; padding: 9px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-
-    .scanner-box {
-      display: none; width: 100%; margin-bottom: 12px; border-radius: 8px;
-      overflow: hidden; border: 1px solid var(--border); background: #000;
+    input {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
     }
 
-    /* FRISE D'AVANCEMENT EN BAS */
+    .scanner-zone {
+      display: none;
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      background: #000;
+    }
+    .msg-feedback {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      min-height: 18px;
+    }
+
+    /* FRISE FIXÉE EN BAS */
     #progress-tracker {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 160px;
-      background: #ffffff; border-top: 2px solid #e2e8f0; box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
-      display: flex; flex-direction: column; padding: 10px 20px; box-sizing: border-box; z-index: 1000;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 165px;
+      background: #ffffff;
+      border-top: 2px solid #e2e8f0;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      padding: 10px 20px;
+      box-sizing: border-box;
+      z-index: 1000;
     }
-    .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .tracker-title { font-weight: 700; font-size: 13px; color: #334155; }
-    .tracker-lanes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: 105px; }
-    .lane { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .tracker-lanes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      height: 110px;
+    }
+    .lane {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     .lane-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569;
-      background: #e2e8f0; padding: 4px 6px; border-bottom: 1px solid #cbd5e1;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 5px 8px;
+      border-bottom: 1px solid #cbd5e1;
     }
-    .lane-content { padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .lane-content {
+      padding: 6px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
     .badge-group {
-      background: #e0e7ff; color: #1e3a8a; font-size: 11px; padding: 4px 6px;
-      border-radius: 4px; font-weight: 600; border: 1px solid #c7d2fe; display: flex;
-      justify-content: space-between; cursor: help;
+      background: #e0e7ff;
+      color: #1e3a8a;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid #c7d2fe;
+      display: flex;
+      justify-content: space-between;
+      cursor: help;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>🏁 Tour de Contrôle PC</h1>
+    <h1>🏁 Tour de Contrôle des Courses</h1>
     <a href="VOTRE_URL_GOOGLE_SHEET_ICI" id="linkSheet" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
   </header>
 
   <div class="grid">
-    <!-- CRÉATION GROUPE MANUEL SANS QR -->
+    <!-- COLONNE 1 : DÉPART MANUEL -->
     <div class="card">
-      <h2>🚩 Nouveau Groupe Manuel (Sans QR Code)</h2>
-      <form id="formManPC">
-        <div class="row">
-          <div class="col"><label>Nom *</label><input type="text" id="pcNom" required></div>
-          <div class="col"><label>Prénom *</label><input type="text" id="pcPrenom" required></div>
+      <h2>🚩 Nouveau Départ Manuel</h2>
+      <form id="formManPC" style="display:flex; flex-direction:column; flex:1; justify-content:space-between;">
+        <div>
+          <div class="row">
+            <div class="col"><label>Nom *</label><input type="text" id="pcNom" required></div>
+            <div class="col"><label>Prénom *</label><input type="text" id="pcPrenom" required></div>
+          </div>
+          <div class="row">
+            <div class="col"><label>Téléphone *</label><input type="tel" id="pcTel" placeholder="06..." required></div>
+            <div class="col"><label>Nombre de pers. *</label><input type="number" id="pcNb" min="1" value="1" required></div>
+          </div>
         </div>
-        <div class="row">
-          <div class="col"><label>Téléphone *</label><input type="tel" id="pcTel" placeholder="06..." required></div>
-          <div class="col"><label>Nombre de personnes *</label><input type="number" id="pcNb" min="1" value="1" required></div>
+        <div>
+          <button type="submit" class="btn btn-primary" id="btnSubmitPC" style="width:100%;">Valider le Départ</button>
+          <div id="msgDepPC" class="msg-feedback"></div>
         </div>
-        <button type="submit" class="btn btn-primary" id="btnSubmitPC" style="width:100%;">Valider le Départ Manuel</button>
       </form>
-      <div id="msgDepPC" style="margin-top:10px; font-weight:600; font-size:13px;"></div>
     </div>
 
-    <!-- POINTAGE DE SECOURS PC -->
-    <div class="card">
-      <h2>⏱️ Pointage Secours (N° Billet ou N° Groupe)</h2>
-      <div style="display:flex; gap:10px; margin-bottom:12px;">
-        <button class="btn btn-dark" type="button" onclick="startScannerPC()">📷 Webcam</button>
-        <input type="text" id="pcSearchQuery" placeholder="Scanner ou taper N°..." style="flex:1;">
-        <button class="btn btn-primary" type="button" onclick="declencherChercherPC()">Chercher</button>
-      </div>
-      <div id="reader-pc" class="scanner-box"></div>
-
-      <div id="recapPC" style="display:none; background:#f1f5f9; padding:12px; border-radius:6px; margin-bottom:10px;">
-        <p style="margin:0 0 6px 0;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
-        <p style="margin:0 0 10px 0; font-size:13px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
+    <!-- COLONNE 2 : SCAN ARRIVÉE DÉDIÉ -->
+    <div class="card" style="border-top: 4px solid var(--success);">
+      <h2>🏁 Pointage Arrivée (Scan / Clavier)</h2>
+      <div style="margin-bottom:10px;">
+        <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:8px;" onclick="toggleScanner('reader-arr', 'btnCamArr', validerArriveeDirecte)">📷 Allumer Webcam Arrivée</button>
+        <div id="reader-arr" class="scanner-zone"></div>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-primary" type="button" onclick="validerPostePC('ravito1')">Ravito 1</button>
-          <button class="btn btn-primary" type="button" onclick="validerPostePC('ravito2')">Ravito 2</button>
-          <button class="btn btn-sheet" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
+          <input type="text" id="inputArrDirect" placeholder="N° Dossard ou QR billet...">
+          <button class="btn btn-success" type="button" onclick="validerArriveeParInput()">Valider</button>
         </div>
       </div>
-      <div id="msgPointagePC" style="margin-top:8px; font-weight:600; font-size:13px;"></div>
+      <div id="msgArrPC" class="msg-feedback"></div>
+    </div>
+
+    <!-- COLONNE 3 : POINTAGE SECOURS / RAVITAILLEMENTS -->
+    <div class="card">
+      <h2>⏱️ Pointage Secours & Ravitaillements</h2>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <button class="btn btn-dark" type="button" id="btnCamSecours" onclick="toggleScanner('reader-secours', 'btnCamSecours', chercherPC)">📷 Webcam</button>
+        <input type="text" id="pcSearchQuery" placeholder="Rechercher N° Dossard ou QR..." style="flex:1;">
+        <button class="btn btn-primary" type="button" onclick="chercherPC(document.getElementById('pcSearchQuery').value)">Chercher</button>
+      </div>
+      <div id="reader-secours" class="scanner-zone"></div>
+
+      <!-- Résultat de recherche pour validation ciblée -->
+      <div id="recapPC" style="display:none; background:#f1f5f9; padding:12px; border-radius:6px; border:1px solid var(--border);">
+        <p style="margin:0 0 4px 0;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
+        <p style="margin:0 0 10px 0; font-size:12px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+          <button class="btn btn-primary" style="font-size:12px; padding:8px 4px;" type="button" onclick="validerPostePC('ravito1')">Ravitaillement 1</button>
+          <button class="btn btn-primary" style="font-size:12px; padding:8px 4px;" type="button" onclick="validerPostePC('ravito2')">Ravitaillement 2</button>
+          <button class="btn btn-sheet" style="font-size:12px; padding:8px 4px;" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
+        </div>
+      </div>
+      <div id="msgPointagePC" class="msg-feedback"></div>
     </div>
   </div>
 
   <!-- BANDE D'AVANCEMENT EN BAS -->
   <div id="progress-tracker">
     <div class="tracker-header">
-      <span class="tracker-title">CHEMIN DE COURSE (SURVOLER LES GROUPES POUR LE TÉLÉPHONE)</span>
-      <span id="trackerTimer" style="font-size:12px; color:#64748b;">Mise à jour en cours...</span>
+      <span style="font-weight:700; font-size:12px; color:#334155;">AVANCEMENT DU CIRCUIT (SURVOLER POUR AFFICHER LE TÉLÉPHONE ET LES TEMPS)</span>
+      <span id="trackerTimer" style="font-size:12px; color:#64748b;">Mise à jour...</span>
     </div>
     <div class="tracker-lanes">
       <div class="lane"><div class="lane-title" id="t-dep">En Course (0p)</div><div class="lane-content" id="l-dep"></div></div>
-      <div class="lane"><div class="lane-title" id="t-r1">Ravito 1 (0p)</div><div class="lane-content" id="l-r1"></div></div>
-      <div class="lane"><div class="lane-title" id="t-r2">Ravito 2 (0p)</div><div class="lane-content" id="l-r2"></div></div>
+      <div class="lane"><div class="lane-title" id="t-r1">Ravitaillement 1 (0p)</div><div class="lane-content" id="l-r1"></div></div>
+      <div class="lane"><div class="lane-title" id="t-r2">Ravitaillement 2 (0p)</div><div class="lane-content" id="l-r2"></div></div>
       <div class="lane"><div class="lane-title" id="t-arr">Arrivés (0p)</div><div class="lane-content" id="l-arr"></div></div>
     </div>
   </div>
@@ -130,78 +259,114 @@
 
     document.getElementById("linkSheet").href = SHEET_URL;
 
-    let targetNumGroupe = null;
     let activeScanner = null;
-    let isStopping = false;
+    let activeScannerId = null;
+    let targetNumGroupe = null;
 
+    // Décodage Base64 HelloAsso
     function extraireNumeroBillet(texteScanne) {
       var texte = (texteScanne || "").trim();
       if (/^\d+$/.test(texte)) return texte;
       try {
         var decodage = atob(texte);
-        if (decodage.indexOf(":") !== -1) return decodage.split(":")[0].trim();
+        if (decodage.indexOf(":") !== -1) {
+          return decodage.split(":")[0].trim();
+        }
       } catch (e) {}
       return texte;
     }
 
-    async function stopScannerPC() {
+    // Gestion Caméra générique (Arrivée ou Secours)
+    async function stopScanner() {
       if (activeScanner) {
         try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
         activeScanner = null;
       }
-      const el = document.getElementById("reader-pc");
-      if (el) { el.style.display = "none"; el.innerHTML = ""; }
+      if (activeScannerId) {
+        const el = document.getElementById(activeScannerId);
+        if (el) { el.style.display = "none"; el.innerHTML = ""; }
+      }
+      document.getElementById("btnCamArr").textContent = "📷 Allumer Webcam Arrivée";
+      document.getElementById("btnCamSecours").textContent = "📷 Webcam";
+      activeScannerId = null;
     }
 
-    async function startScannerPC() {
-      if (isStopping) return;
-      const el = document.getElementById("reader-pc");
-
-      if (activeScanner && el.style.display === "block") {
-        await stopScannerPC();
+    async function toggleScanner(readerId, btnId, onScanCallback) {
+      if (activeScanner && activeScannerId === readerId) {
+        await stopScanner();
         return;
       }
-      await stopScannerPC();
+      await stopScanner();
 
+      const el = document.getElementById(readerId);
       el.style.display = "block";
-      activeScanner = new Html5Qrcode("reader-pc");
+      activeScannerId = readerId;
+      document.getElementById(btnId).textContent = "🛑 Éteindre Webcam";
+
+      activeScanner = new Html5Qrcode(readerId);
       activeScanner.start(
         { facingMode: "user" },
-        { fps: 15, qrbox: { width: 220, height: 220 } },
-        async (decodedText) => {
-          isStopping = true;
-          const cleanNum = extraireNumeroBillet(decodedText);
-          await stopScannerPC();
-          isStopping = false;
-          document.getElementById("pcSearchQuery").value = cleanNum;
-          chercherPC(cleanNum);
+        { fps: 12, qrbox: { width: 200, height: 200 } },
+        (decodedText) => {
+          const num = extraireNumeroBillet(decodedText);
+          onScanCallback(num);
         },
         () => {}
       ).catch(err => {
-        alert("Impossible d'accéder à la caméra : " + err);
-        stopScannerPC();
+        alert("Caméra inaccessible : " + err);
+        stopScanner();
       });
     }
 
-    function declencherChercherPC() {
-      const q = extraireNumeroBillet(document.getElementById("pcSearchQuery").value);
-      chercherPC(q);
+    // 1. ARRIVÉE DIRECTE
+    function validerArriveeParInput() {
+      const q = extraireNumeroBillet(document.getElementById("inputArrDirect").value);
+      if (q) validerArriveeDirecte(q);
     }
-    document.getElementById("pcSearchQuery").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); declencherChercherPC(); }
+
+    document.getElementById("inputArrDirect").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); validerArriveeParInput(); }
     });
 
-    // Création Manuelle PC
+    function validerArriveeDirecte(num) {
+      const msg = document.getElementById("msgArrPC");
+      msg.style.color = "#1e293b";
+      msg.textContent = `Pointage de l'arrivée #${num}...`;
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "pointerPassage", poste: "arrivee", numGroupe: num })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.success) {
+          msg.style.color = "green";
+          msg.textContent = `✅ Arrivée validée à ${res.heure} pour #${num} !`;
+          document.getElementById("inputArrDirect").value = "";
+          setTimeout(refreshTracker, 600);
+        } else {
+          msg.style.color = "red";
+          msg.textContent = "Numéro introuvable sur le circuit.";
+        }
+      })
+      .catch(() => {
+        msg.style.color = "red";
+        msg.textContent = "Erreur de connexion réseau.";
+      });
+    }
+
+    // 2. DÉPART MANUEL
     document.getElementById("formManPC").addEventListener("submit", (e) => {
       e.preventDefault();
       const btn = document.getElementById("btnSubmitPC");
       const msg = document.getElementById("msgDepPC");
       btn.disabled = true;
       msg.style.color = "#1e293b";
-      msg.textContent = "Enregistrement...";
+      msg.textContent = "Enregistrement du départ...";
 
-      const prenom = document.getElementById("pcPrenom").value;
-      const nom = document.getElementById("pcNom").value;
+      const prenom = document.getElementById("pcPrenom").value.trim();
+      const nom = document.getElementById("pcNom").value.trim();
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -210,31 +375,46 @@
           action: "creerGroupe",
           nom: nom,
           prenom: prenom,
-          telephone: document.getElementById("pcTel").value,
+          telephone: document.getElementById("pcTel").value.trim(),
           nbPers: parseInt(document.getElementById("pcNb").value),
           codesBillets: ""
         })
       })
       .then(r => r.json())
       .then(res => {
-        msg.style.color = "green";
-        msg.textContent = `✅ Départ validé ! N° Participation attribué : ${res.numGroupe} (${prenom} ${nom})`;
-        document.getElementById("formManPC").reset();
-        setTimeout(refreshTracker, 800);
+        if (res && res.success) {
+          msg.style.color = "green";
+          msg.textContent = `✅ Départ validé ! N° attribué : ${res.numGroupe} (${prenom} ${nom})`;
+          document.getElementById("formManPC").reset();
+          document.getElementById("pcNb").value = "1";
+          setTimeout(refreshTracker, 600);
+        } else {
+          msg.style.color = "red";
+          msg.textContent = "Erreur d'enregistrement.";
+        }
       })
       .catch(() => {
         msg.style.color = "red";
-        msg.textContent = "Erreur d'enregistrement.";
+        msg.textContent = "Erreur de communication.";
       })
       .finally(() => { btn.disabled = false; });
     });
 
-    // Recherche Secours PC
-    function chercherPC(q) {
+    // 3. RECHERCHE ET SECOURS
+    document.getElementById("pcSearchQuery").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        chercherPC(document.getElementById("pcSearchQuery").value);
+      }
+    });
+
+    function chercherPC(query) {
+      const q = extraireNumeroBillet(query);
       if (!q) return;
+
       const msg = document.getElementById("msgPointagePC");
       msg.style.color = "#1e293b";
-      msg.textContent = "Recherche...";
+      msg.textContent = `Recherche du groupe #${q}...`;
       document.getElementById("recapPC").style.display = "none";
 
       fetch(`${SCRIPT_URL}?action=findGroupe&query=${encodeURIComponent(q)}`, {
@@ -253,39 +433,47 @@
           msg.textContent = "";
         } else {
           msg.style.color = "red";
-          msg.textContent = "Dossard ou billet non trouvé.";
+          msg.textContent = `Billet ou dossier #${q} non trouvé.`;
         }
       })
       .catch(() => {
         msg.style.color = "red";
-        msg.textContent = "Erreur de connexion.";
+        msg.textContent = "Erreur de transmission réseau.";
       });
     }
 
     function validerPostePC(poste) {
+      if (!targetNumGroupe) return;
       const msg = document.getElementById("msgPointagePC");
       msg.style.color = "#1e293b";
-      msg.textContent = "Enregistrement du passage...";
+      msg.textContent = "Validation du passage...";
 
       fetch(SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action: "pointerPassage", poste: poste, numGroupe: targetNumGroupe })
       })
-      .then(() => {
-        msg.style.color = "green";
-        msg.textContent = `Pointage ${poste.toUpperCase()} validé pour le groupe N°${targetNumGroupe} !`;
-        document.getElementById("recapPC").style.display = "none";
-        document.getElementById("pcSearchQuery").value = "";
-        setTimeout(refreshTracker, 800);
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.success) {
+          const nomPoste = poste === "arrivee" ? "Arrivée" : (poste === "ravito1" ? "Ravitaillement 1" : "Ravitaillement 2");
+          msg.style.color = "green";
+          msg.textContent = `✅ ${nomPoste} validé à ${res.heure} pour le groupe #${targetNumGroupe} !`;
+          document.getElementById("recapPC").style.display = "none";
+          document.getElementById("pcSearchQuery").value = "";
+          setTimeout(refreshTracker, 600);
+        } else {
+          msg.style.color = "red";
+          msg.textContent = "Échec du pointage.";
+        }
       })
       .catch(() => {
         msg.style.color = "red";
-        msg.textContent = "Erreur de pointage.";
+        msg.textContent = "Erreur de communication.";
       });
     }
 
-    // Frise d'avancement
+    // 4. ACTUALISATION DE LA FRISE D'AVANCEMENT
     function refreshTracker() {
       fetch(`${SCRIPT_URL}?action=getAll`, { method: "GET", redirect: "follow" })
         .then(r => r.json())
@@ -319,14 +507,15 @@
           });
 
           document.getElementById("t-dep").textContent = `En Course (${cDep}p)`;
-          document.getElementById("t-r1").textContent = `Ravito 1 (${cR1}p)`;
-          document.getElementById("t-r2").textContent = `Ravito 2 (${cR2}p)`;
+          document.getElementById("t-r1").textContent = `Ravitaillement 1 (${cR1}p)`;
+          document.getElementById("t-r2").textContent = `Ravitaillement 2 (${cR2}p)`;
           document.getElementById("t-arr").textContent = `Arrivés (${cArr}p)`;
 
           const now = new Date();
           const timeStr = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2);
-          document.getElementById("trackerTimer").textContent = `Actualisé à ${timeStr} | Total sur circuit : ${cDep + cR1 + cR2 + cArr} personnes`;
-        });
+          document.getElementById("trackerTimer").textContent = `Actualisé à ${timeStr} | Sur le circuit : ${cDep + cR1 + cR2} pers. (Total : ${cDep + cR1 + cR2 + cArr})`;
+        })
+        .catch(() => {});
     }
 
     refreshTracker();
