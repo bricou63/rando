@@ -25,7 +25,6 @@
     label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px; }
     input { width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; box-sizing: border-box;}
     
-    /* FIX CAMÉRA PC */
     .scanner-zone { display: none; width: 100%; height: 180px; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: #000; position: relative; }
     .scanner-zone video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 100%; min-height: 100%; width: auto !important; height: auto !important; }
 
@@ -53,12 +52,13 @@
   </header>
 
   <div class="grid">
+    <!-- GAUCHE : DÉPARTS -->
     <div class="card" style="border-top: 4px solid var(--primary);">
       <h2>🚩 Enregistrement des Départs</h2>
       <div class="sub-box">
         <span class="sub-title">1. Scanner le(s) billet(s) (QR Code)</span>
         <div id="bannerDepStatus" class="banner-feedback"></div>
-        <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-dep', 'btnCamDep', traiterScanDepart)">📷 Allumer Webcam Départ</button>
+        <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-dep', 'btnCamDep', 'depart')">📷 Scanner Billet(s) QR</button>
         <div id="reader-dep" class="scanner-zone"></div>
         <div id="boxScannedDep" style="display:none; margin-top:4px;">
           <div style="font-size:12px; font-weight:700;" id="depCountText">Membres du groupe : 0</div>
@@ -79,15 +79,16 @@
       </div>
     </div>
 
+    <!-- DROITE : ARRIVÉE & RAVITAILLEMENTS -->
     <div class="card" style="border-top: 4px solid var(--success);">
       <h2>🏁 Arrivée & Contrôle Ravitaillements</h2>
       <div class="sub-box">
         <span class="sub-title">1. Pointage Rapide Arrivée</span>
         <div id="bannerArrStatus" class="banner-feedback"></div>
-        <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-arr', 'btnCamArr', validerArriveeDirecte)">📷 Allumer Webcam Arrivée</button>
+        <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-arr', 'btnCamArr', 'arrivee')">📷 Scanner Arrivée QR</button>
         <div id="reader-arr" class="scanner-zone"></div>
         <div style="display:flex; gap:6px;">
-          <input type="text" id="inputArrDirect" placeholder="Scanner QR ou taper N° Dossard...">
+          <input type="text" id="inputArrDirect" placeholder="Ou taper N° Dossard...">
           <button class="btn btn-success" type="button" onclick="validerArriveeParInput()">Valider</button>
         </div>
       </div>
@@ -127,6 +128,7 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
 
+    // Sons natifs
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
@@ -135,7 +137,7 @@
     function soundBuzz() { try { initAudio(); const now=audioCtx.currentTime; function playTut(t){const osc=audioCtx.createOscillator(), gain=audioCtx.createGain(); osc.type="sawtooth"; osc.frequency.setValueAtTime(180,t); gain.gain.setValueAtTime(0.25,t); gain.gain.linearRampToValueAtTime(0.01,t+0.12); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t+0.12);} playTut(now); playTut(now+0.16); }catch(e){} }
 
     let activeScanner = null, activeScannerId = null, targetNumGroupe = null;
-    let depBillets = [], depTicketsSet = new Set(), depScanPause = false;
+    let depBillets = [], depTicketsSet = new Set();
 
     function extraireNumeroBillet(texteScanne) {
       var texte = (texteScanne || "").trim(); if (/^\d+$/.test(texte)) return texte;
@@ -145,40 +147,71 @@
     async function stopScanner() {
       if (activeScanner) { try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {} activeScanner = null; }
       if (activeScannerId) { const el = document.getElementById(activeScannerId); if (el) { el.style.display = "none"; } }
-      document.getElementById("btnCamArr").textContent = "📷 Allumer Webcam Arrivée"; document.getElementById("btnCamDep").textContent = "📷 Allumer Webcam Départ";
+      document.getElementById("btnCamArr").textContent = "📷 Scanner Arrivée QR";
+      document.getElementById("btnCamDep").textContent = "📷 Scanner Billet(s) QR";
       activeScannerId = null;
     }
 
-    async function toggleScanner(readerId, btnId, onScanCallback) {
+    async function toggleScanner(readerId, btnId, type) {
       initAudio();
       if (activeScanner && activeScannerId === readerId) { await stopScanner(); return; }
       await stopScanner();
+
       document.getElementById(readerId).style.display = "block";
       activeScannerId = readerId;
-      document.getElementById(btnId).textContent = "🛑 Éteindre Webcam";
+      document.getElementById(btnId).textContent = "🛑 Éteindre Caméra";
+
       activeScanner = new Html5Qrcode(readerId);
-      activeScanner.start( { facingMode: "user" }, { fps: 15 },
+      activeScanner.start(
+        { facingMode: "user" },
+        { fps: 15 },
         (decodedText) => {
           soundBip();
           const num = extraireNumeroBillet(decodedText);
-          onScanCallback(num);
-        }, () => {}
-      ).catch(e => { soundBuzz(); alert("Caméra inaccessible"); stopScanner(); });
+
+          // Arrêt immédiat de la caméra pour départ ou arrivée
+          stopScanner().then(() => {
+            if (type === "depart") {
+              traiterScanDepart(num);
+            } else if (type === "arrivee") {
+              validerArriveeDirecte(num);
+            }
+          });
+        },
+        () => {}
+      ).catch(e => {
+        soundBuzz();
+        alert("Caméra inaccessible : " + e);
+        stopScanner();
+      });
     }
 
     function afficherFeedbackDepart(msg, type) { const b = document.getElementById("bannerDepStatus"); b.className = "banner-feedback banner-" + type; b.innerHTML = msg; }
 
     function traiterScanDepart(numTicket) {
-      if (depScanPause || depTicketsSet.has(numTicket)) { if(depTicketsSet.has(numTicket)) soundBuzz(); return; }
-      depScanPause = true;
+      if (depTicketsSet.has(numTicket)) {
+        soundBuzz();
+        afficherFeedbackDepart(`⚠️ Billet #${numTicket} déjà présent dans le groupe.`, "error");
+        return;
+      }
+
       afficherFeedbackDepart(`⏳ Recherche <strong>#${numTicket}</strong>...`, "loading");
       fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, { method: "GET" })
       .then(r => r.json()).then(d => {
         if (d && d.found) {
-          soundTing(); depTicketsSet.add(numTicket); depBillets.push(d); actualiserVisuelDepartQR();
+          soundTing();
+          depTicketsSet.add(numTicket);
+          depBillets.push(d);
+          actualiserVisuelDepartQR();
           afficherFeedbackDepart(`✅ Ajouté : <strong>${d.prenom} ${d.nom}</strong>`, "success");
-        } else { soundBuzz(); afficherFeedbackDepart(`❌ Billet #${numTicket} inconnu.`, "error"); }
-      }).catch(() => { soundBuzz(); afficherFeedbackDepart("❌ Erreur réseau.", "error"); }).finally(() => { setTimeout(() => { depScanPause = false; }, 1200); });
+        } else {
+          soundBuzz();
+          afficherFeedbackDepart(`❌ Billet #${numTicket} inconnu.`, "error");
+        }
+      }).catch(() => {
+        soundBuzz();
+        afficherFeedbackDepart("❌ Erreur réseau.", "error");
+      });
     }
 
     function actualiserVisuelDepartQR() {
@@ -197,20 +230,20 @@
       .then(r => r.json()).then(res => {
         if (res && res.success) {
           soundTing(); afficherFeedbackDepart(`✅ DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong>`, "success");
-          depBillets = []; depTicketsSet.clear(); document.getElementById("depMembersList").innerHTML = ""; document.getElementById("depTelQR").value = ""; document.getElementById("boxScannedDep").style.display = "none"; stopScanner(); setTimeout(refreshTracker, 600);
+          depBillets = []; depTicketsSet.clear(); document.getElementById("depMembersList").innerHTML = ""; document.getElementById("depTelQR").value = ""; document.getElementById("boxScannedDep").style.display = "none"; setTimeout(refreshTracker, 600);
         } else { soundBuzz(); afficherFeedbackDepart("❌ Erreur.", "error"); }
       }).catch(() => { soundBuzz(); afficherFeedbackDepart("❌ Erreur.", "error"); });
     }
 
     document.getElementById("formManPC").addEventListener("submit", (e) => {
       e.preventDefault(); initAudio();
-      const btn = document.getElementById("btnSubmitPC"), msg = document.getElementById("msgDepManuelle"); btn.disabled = true;
-      msg.style.color = "#1e293b"; msg.textContent = "⏳ Enregistrement...";
+      const btn = document.getElementById("btnSubmitPC"), msg = document.getElementById("bannerDepStatus"); btn.disabled = true;
+      afficherFeedbackDepart("⏳ Enregistrement...", "loading");
       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: document.getElementById("pcNom").value.trim(), prenom: document.getElementById("pcPrenom").value.trim(), telephone: document.getElementById("pcTel").value.trim(), nbPers: parseInt(document.getElementById("pcNb").value), codesBillets: "" }) })
       .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); msg.style.color = "green"; msg.textContent = `✅ Validé ! N° ${res.numGroupe}`; document.getElementById("formManPC").reset(); setTimeout(refreshTracker, 600); } 
-        else { soundBuzz(); msg.style.color = "red"; msg.textContent = "❌ Erreur."; }
-      }).catch(() => { soundBuzz(); msg.style.color = "red"; msg.textContent = "❌ Erreur réseau."; }).finally(() => { btn.disabled = false; });
+        if (res && res.success) { soundTing(); afficherFeedbackDepart(`✅ Validé ! N° ${res.numGroupe}`, "success"); document.getElementById("formManPC").reset(); setTimeout(refreshTracker, 600); } 
+        else { soundBuzz(); afficherFeedbackDepart("❌ Erreur.", "error"); }
+      }).catch(() => { soundBuzz(); afficherFeedbackDepart("❌ Erreur réseau.", "error"); }).finally(() => { btn.disabled = false; });
     });
 
     function afficherFeedbackArrivee(msg, type) { const b = document.getElementById("bannerArrStatus"); b.className = "banner-feedback banner-" + type; b.innerHTML = msg; }
@@ -222,7 +255,7 @@
       afficherFeedbackArrivee(`⏳ Validation <strong>#${num}</strong>...`, "loading");
       fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "pointerPassage", poste: "arrivee", numGroupe: num }) })
       .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${res.heure}</strong> !`, "success"); document.getElementById("inputArrDirect").value = ""; setTimeout(refreshTracker, 600); } 
+        if (res && res.success) { soundTing(); afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${res.heure}</strong> pour #${num} !`, "success"); document.getElementById("inputArrDirect").value = ""; setTimeout(refreshTracker, 600); } 
         else { soundBuzz(); afficherFeedbackArrivee(`❌ Dossard #${num} introuvable.`, "error"); }
       }).catch(() => { soundBuzz(); afficherFeedbackArrivee("❌ Erreur.", "error"); });
     }
