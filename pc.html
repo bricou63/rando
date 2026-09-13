@@ -20,25 +20,25 @@
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 16px 16px 175px 16px;
+      padding: 14px 16px 170px 16px;
       box-sizing: border-box;
     }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       display: flex;
       align-items: center;
       gap: 10px;
     }
     .btn {
-      padding: 9px 14px;
+      padding: 8px 14px;
       border: none;
       border-radius: 6px;
       font-weight: 600;
@@ -56,7 +56,7 @@
     .btn-dark { background: var(--slate); color: white; }
     .btn-success { background: var(--success); color: white; }
     
-    /* DISPOSITION EN 2 GRANDES FENÊTRES */
+    /* 2 COLONNES ALIGNÉES SANS SCROLL */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -64,15 +64,15 @@
     }
     .card {
       background: var(--card);
-      padding: 16px;
+      padding: 14px 16px;
       border-radius: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.04);
       border: 1px solid var(--border);
     }
     h2 {
       margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 16px;
+      margin-bottom: 8px;
+      font-size: 15px;
       border-bottom: 2px solid var(--bg);
       padding-bottom: 6px;
       display: flex;
@@ -84,44 +84,65 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .sub-title {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: #475569;
       text-transform: uppercase;
       margin-bottom: 6px;
       display: block;
     }
-    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .row { display: flex; gap: 8px; margin-bottom: 6px; }
     .row .col { flex: 1; }
     label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px; }
     input {
       width: 100%;
-      padding: 8px 10px;
+      padding: 7px 9px;
       border: 1px solid var(--border);
       border-radius: 6px;
       box-sizing: border-box;
       font-size: 13px;
     }
 
-    /* ZONE CAMÉRA NATURELLE */
+    /* RECADRAGE VISUEL COMPACT DU FLUX VIDÉO */
     .scanner-zone {
       display: none;
       width: 100%;
+      height: 175px;
       border-radius: 8px;
       overflow: hidden;
       margin-bottom: 8px;
       background: #000;
+      position: relative;
+    }
+    /* Masque les marges noires internes générées par html5-qrcode et centre le flux */
+    .scanner-zone > div {
+      border: none !important;
+    }
+    .scanner-zone video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto !important;
+      height: auto !important;
+    }
+    /* Masque la surcouche d'assombrissement superflue de la librairie */
+    .scanner-zone #reader-dep_scan_region, 
+    .scanner-zone #reader-arr_scan_region {
+      background: transparent !important;
     }
 
-    /* BANDEAUX DE FEEDBACK VISIBLES */
+    /* BANDEAUX DE FEEDBACK */
     .banner-feedback {
       display: none;
-      padding: 10px;
+      padding: 8px 10px;
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       text-align: center;
       margin-bottom: 8px;
@@ -134,26 +155,26 @@
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 6px 10px;
-      max-height: 90px;
+      padding: 4px 8px;
+      max-height: 75px;
       overflow-y: auto;
-      margin: 6px 0;
+      margin: 4px 0;
     }
     .scanned-item {
       font-size: 12px;
-      padding: 3px 0;
+      padding: 2px 0;
       border-bottom: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-between;
     }
 
-    /* FRISE DU BAS */
+    /* FRISE DU BAS FIXÉE */
     #progress-tracker {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 155px;
+      height: 150px;
       background: #ffffff;
       border-top: 2px solid #e2e8f0;
       box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
@@ -173,7 +194,7 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      height: 105px;
+      height: 100px;
     }
     .lane {
       background: #f8fafc;
@@ -189,7 +210,7 @@
       text-transform: uppercase;
       color: #475569;
       background: #e2e8f0;
-      padding: 4px 6px;
+      padding: 3px 6px;
       border-bottom: 1px solid #cbd5e1;
     }
     .lane-content {
@@ -200,8 +221,6 @@
       gap: 3px;
       flex: 1;
     }
-    
-    /* PASTILLE : NOM ET EFFECTIF SEULEMENT */
     .badge-group {
       background: #e0e7ff;
       color: #1e3a8a;
@@ -225,28 +244,25 @@
 
   <div class="grid">
     <!-- ========================================================== -->
-    <!-- FENÊTRE GAUCHE : DÉPARTS (QR ET MANUEL) -->
+    <!-- FENÊTRE GAUCHE : DÉPARTS -->
     <!-- ========================================================== -->
     <div class="card" style="border-top: 4px solid var(--primary);">
       <h2>🚩 Enregistrement des Départs</h2>
 
-      <!-- SECTION DÉPART QR -->
       <div class="sub-box">
         <span class="sub-title">1. Scanner le ou les billets du groupe (QR Code)</span>
         
-        <!-- BANDEAU D'ÉTAT DÉPART -->
         <div id="bannerDepStatus" class="banner-feedback"></div>
 
         <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-dep', 'btnCamDep', traiterScanDepart)">📷 Allumer Webcam Départ</button>
         <div id="reader-dep" class="scanner-zone"></div>
         
-        <!-- Liste des membres scannés et téléphone référent -->
-        <div id="boxScannedDep" style="display:none; margin-top:6px;">
+        <div id="boxScannedDep" style="display:none; margin-top:4px;">
           <div style="font-size:12px; font-weight:700; color:#1e293b;" id="depCountText">Membres du groupe : 0</div>
           <div class="scanned-list" id="depMembersList"></div>
-          <div class="row" style="margin-bottom:0; margin-top:6px;">
+          <div class="row" style="margin-bottom:0; margin-top:4px;">
             <div class="col">
-              <input type="tel" id="depTelQR" placeholder="📞 Tél. du référent (06...)">
+              <input type="tel" id="depTelQR" placeholder="📞 Tél. référent (06...)">
             </div>
             <div class="col" style="flex:0 0 auto;">
               <button class="btn btn-success" type="button" onclick="validerDepartGroupeQR()">Valider Départ QR</button>
@@ -255,7 +271,6 @@
         </div>
       </div>
 
-      <!-- SECTION DÉPART MANUEL -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Ou Nouveau Départ Manuel (Sans Billet)</span>
         <form id="formManPC">
@@ -265,12 +280,12 @@
           </div>
           <div class="row">
             <div class="col"><label>Téléphone *</label><input type="tel" id="pcTel" placeholder="06..." required></div>
-            <div class="col" style="max-width:110px;"><label>Nb pers. *</label><input type="number" id="pcNb" min="1" value="1" required></div>
+            <div class="col" style="max-width:100px;"><label>Nb pers. *</label><input type="number" id="pcNb" min="1" value="1" required></div>
           </div>
           <button type="submit" class="btn btn-primary" id="btnSubmitPC" style="width:100%;">Valider le Départ Manuel</button>
         </form>
       </div>
-      <div id="msgDepManuelle" style="margin-top:6px; font-size:12px; font-weight:700; text-align:center;"></div>
+      <div id="msgDepManuelle" style="margin-top:4px; font-size:12px; font-weight:700; text-align:center;"></div>
     </div>
 
     <!-- ========================================================== -->
@@ -279,11 +294,9 @@
     <div class="card" style="border-top: 4px solid var(--success);">
       <h2>🏁 Arrivée & Contrôle Ravitaillements</h2>
 
-      <!-- POINTAGE ARRIVÉE RAPIDE -->
       <div class="sub-box">
         <span class="sub-title">1. Pointage Rapide Arrivée</span>
         
-        <!-- BANDEAU DE VALIDATION ARRIVÉE -->
         <div id="bannerArrStatus" class="banner-feedback"></div>
 
         <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-arr', 'btnCamArr', validerArriveeDirecte)">📷 Allumer Webcam Arrivée</button>
@@ -294,29 +307,28 @@
         </div>
       </div>
 
-      <!-- SECOURS & RAVITAILLEMENTS -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Recherche & Pointage Ravitaillements</span>
-        <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
           <input type="text" id="pcSearchQuery" placeholder="N° Dossard ou QR billet..." style="flex:1;">
           <button class="btn btn-primary" type="button" onclick="chercherPC(document.getElementById('pcSearchQuery').value)">Chercher</button>
         </div>
 
-        <div id="recapPC" style="display:none; background:#ffffff; padding:10px; border-radius:6px; border:1px solid var(--border);">
-          <p style="margin:0 0 3px 0; font-size:13px;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
-          <p style="margin:0 0 8px 0; font-size:11px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
+        <div id="recapPC" style="display:none; background:#ffffff; padding:8px 10px; border-radius:6px; border:1px solid var(--border);">
+          <p style="margin:0 0 2px 0; font-size:13px;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
+          <p style="margin:0 0 6px 0; font-size:11px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
           <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
-            <button class="btn btn-primary" style="font-size:11px; padding:6px 2px;" type="button" onclick="validerPostePC('ravito1')">Ravitaillement 1</button>
-            <button class="btn btn-primary" style="font-size:11px; padding:6px 2px;" type="button" onclick="validerPostePC('ravito2')">Ravitaillement 2</button>
-            <button class="btn btn-sheet" style="font-size:11px; padding:6px 2px;" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
+            <button class="btn btn-primary" style="font-size:11px; padding:5px 2px;" type="button" onclick="validerPostePC('ravito1')">Ravitaillement 1</button>
+            <button class="btn btn-primary" style="font-size:11px; padding:5px 2px;" type="button" onclick="validerPostePC('ravito2')">Ravitaillement 2</button>
+            <button class="btn btn-sheet" style="font-size:11px; padding:5px 2px;" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
           </div>
         </div>
-        <div id="msgPointagePC" style="margin-top:6px; font-size:12px; font-weight:700; text-align:center;"></div>
+        <div id="msgPointagePC" style="margin-top:4px; font-size:12px; font-weight:700; text-align:center;"></div>
       </div>
     </div>
   </div>
 
-  <!-- BANDE D'AVANCEMENT FIXÉE EN BAS -->
+  <!-- BANDE D'AVANCEMENT DU CIRCUIT -->
   <div id="progress-tracker">
     <div class="tracker-header">
       <span style="font-weight:700; font-size:11px; color:#334155;">AVANCEMENT DU CIRCUIT (SURVOLER LES GROUPES POUR LES DÉTAILS)</span>
@@ -344,7 +356,6 @@
     let depTicketsSet = new Set();
     let depScanPause = false;
 
-    // Décodage Base64 HelloAsso
     function extraireNumeroBillet(texteScanne) {
       var texte = (texteScanne || "").trim();
       if (/^\d+$/.test(texte)) return texte;
@@ -357,7 +368,6 @@
       return texte;
     }
 
-    // Gestion Caméra Standard & Fiable
     async function stopScanner() {
       if (activeScanner) {
         try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
@@ -386,12 +396,10 @@
 
       activeScanner = new Html5Qrcode(readerId);
 
+      // Analyse large en arrière-plan sans contrainte de cadrage restrictif
       activeScanner.start(
         { facingMode: "user" },
-        {
-          fps: 15,
-          qrbox: { width: 250, height: 250 }
-        },
+        { fps: 15 },
         (decodedText) => {
           const num = extraireNumeroBillet(decodedText);
           onScanCallback(num);
@@ -404,7 +412,7 @@
     }
 
     // -------------------------------------------------------------
-    // DÉPART QR : FEEDBACK VISUEL CLAIR
+    // DÉPART QR
     // -------------------------------------------------------------
     function afficherFeedbackDepart(msg, type) {
       const b = document.getElementById("bannerDepStatus");
@@ -457,7 +465,7 @@
     function validerDepartGroupeQR() {
       const tel = document.getElementById("depTelQR").value.trim();
       if (!tel) {
-        afficherFeedbackDepart("⚠️ Veuillez renseigner le numéro de téléphone du référent.", "error");
+        afficherFeedbackDepart("⚠️ Veuillez renseigner le téléphone du référent.", "error");
         return;
       }
       if (depBillets.length === 0) {
@@ -548,7 +556,7 @@
     });
 
     // -------------------------------------------------------------
-    // ARRIVÉE DIRECTE AVEC FEEDBACK GRAND FORMAT
+    // ARRIVÉE DIRECTE
     // -------------------------------------------------------------
     function afficherFeedbackArrivee(msg, type) {
       const b = document.getElementById("bannerArrStatus");
@@ -664,7 +672,7 @@
     }
 
     // -------------------------------------------------------------
-    // FRISE D'AVANCEMENT (NOM ET EFFECTIF UNIQUEMENT DANS LA PASTILLE)
+    // FRISE D'AVANCEMENT
     // -------------------------------------------------------------
     function refreshTracker() {
       fetch(`${SCRIPT_URL}?action=getAll`, { method: "GET", redirect: "follow" })
@@ -681,10 +689,7 @@
             const badge = document.createElement("div");
             badge.className = "badge-group";
             
-            // INFOBULLE AU SURVOL AVEC TOUS LES DÉTAILS
             badge.title = `Groupe N°${p.numGroupe} - ${p.nom} ${p.prenom}\n📞 Téléphone : ${p.telephone}\nEffectif : ${nb} pers.\nDépart: ${p.depart} | R1: ${p.ravito1 || '-'} | R2: ${p.ravito2 || '-'} | Arrivée: ${p.arrivee || '-'}`;
-            
-            // PASTILLE ÉPURÉE : NOM ET EFFECTIF SEULEMENT
             badge.innerHTML = `<span>${p.nom}</span><span>(${nb}p)</span>`;
 
             if (p.arrivee) {
