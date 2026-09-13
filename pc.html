@@ -56,7 +56,7 @@
     .btn-dark { background: var(--slate); color: white; }
     .btn-success { background: var(--success); color: white; }
     
-    /* DISPOSITION EN 2 COLONNES */
+    /* DISPOSITION EN 2 GRANDES FENÊTRES */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -106,20 +106,20 @@
       font-size: 13px;
     }
 
-    /* ZONE CAMÉRA STABLE & LISIBLE */
+    /* ZONE CAMÉRA HAUTE DÉFINITION */
     .scanner-zone {
       display: none;
       width: 100%;
-      height: 220px;
+      height: 250px;
       border-radius: 8px;
       overflow: hidden;
       margin-bottom: 8px;
-      background: #000;
+      background: #0f172a;
     }
     .scanner-zone video {
       width: 100% !important;
       height: 100% !important;
-      object-fit: contain !important;
+      object-fit: cover !important;
     }
 
     /* BANDEAUX DE FEEDBACK TRÈS VISIBLES */
@@ -240,13 +240,13 @@
       <div class="sub-box">
         <span class="sub-title">1. Scanner le ou les billets du groupe (QR Code)</span>
         
-        <!-- BANDEAU D'ÉTAT DÉPART EN GRAND AU-DESSUS -->
+        <!-- BANDEAU D'ÉTAT DÉPART -->
         <div id="bannerDepStatus" class="banner-feedback"></div>
 
         <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-dep', 'btnCamDep', traiterScanDepart)">📷 Allumer Webcam Départ</button>
         <div id="reader-dep" class="scanner-zone"></div>
         
-        <!-- Liste des membres scannés et confirmation téléphone -->
+        <!-- Liste des membres scannés et téléphone référent -->
         <div id="boxScannedDep" style="display:none; margin-top:6px;">
           <div style="font-size:12px; font-weight:700; color:#1e293b;" id="depCountText">Membres du groupe : 0</div>
           <div class="scanned-list" id="depMembersList"></div>
@@ -285,11 +285,11 @@
     <div class="card" style="border-top: 4px solid var(--success);">
       <h2>🏁 Arrivée & Contrôle Ravitaillements</h2>
 
-      <!-- POINTAGE ARRIVÉE DIRECT AVEC BANDEAU FLASH -->
+      <!-- POINTAGE ARRIVÉE RAPIDE -->
       <div class="sub-box">
         <span class="sub-title">1. Pointage Rapide Arrivée</span>
         
-        <!-- BANDEAU DE VALIDATION ARRIVÉE TRÈS VISIBLE -->
+        <!-- BANDEAU DE VALIDATION ARRIVÉE -->
         <div id="bannerArrStatus" class="banner-feedback"></div>
 
         <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-arr', 'btnCamArr', validerArriveeDirecte)">📷 Allumer Webcam Arrivée</button>
@@ -363,7 +363,7 @@
       return texte;
     }
 
-    // Gestion Caméra Pleine Résolution
+    // Gestion Caméra HD
     async function stopScanner() {
       if (activeScanner) {
         try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
@@ -391,16 +391,25 @@
       document.getElementById(btnId).textContent = "🛑 Éteindre Webcam";
 
       activeScanner = new Html5Qrcode(readerId);
-      
-      // Configuration optimale : pas de qrbox restrictive pour garder la haute résolution
+
+      // Demande explicite de haute résolution HD
+      const cameraConstraints = {
+        facingMode: "user",
+        width: { min: 1024, ideal: 1280, max: 1920 },
+        height: { min: 720, ideal: 720, max: 1080 }
+      };
+
       const config = {
-        fps: 15,
-        aspectRatio: 1.333333,
-        disableFlip: false
+        fps: 20,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const size = Math.floor(minEdge * 0.75);
+          return { width: size, height: size };
+        }
       };
 
       activeScanner.start(
-        { facingMode: "user" },
+        cameraConstraints,
         config,
         (decodedText) => {
           const num = extraireNumeroBillet(decodedText);
@@ -408,13 +417,24 @@
         },
         () => {}
       ).catch(err => {
-        alert("Caméra inaccessible : " + err);
-        stopScanner();
+        // Fallback sans contraintes si la caméra ne supporte pas le profil HD
+        activeScanner.start(
+          { facingMode: "user" },
+          { fps: 15 },
+          (decodedText) => {
+            const num = extraireNumeroBillet(decodedText);
+            onScanCallback(num);
+          },
+          () => {}
+        ).catch(e => {
+          alert("Impossible de démarrer la caméra : " + e);
+          stopScanner();
+        });
       });
     }
 
     // -------------------------------------------------------------
-    // DÉPART QR : FEEDBACK VISUEL CLAIR AU-DESSUS
+    // DÉPART QR : FEEDBACK VISUEL CLAIR
     // -------------------------------------------------------------
     function afficherFeedbackDepart(msg, type) {
       const b = document.getElementById("bannerDepStatus");
@@ -674,7 +694,7 @@
     }
 
     // -------------------------------------------------------------
-    // FRISE D'AVANCEMENT (SANS NUMÉRO DANS LA PASTILLE)
+    // FRISE D'AVANCEMENT (NOM ET EFFECTIF UNIQUEMENT DANS LA PASTILLE)
     // -------------------------------------------------------------
     function refreshTracker() {
       fetch(`${SCRIPT_URL}?action=getAll`, { method: "GET", redirect: "follow" })
@@ -691,10 +711,10 @@
             const badge = document.createElement("div");
             badge.className = "badge-group";
             
-            // INFOBULLE AU SURVOL COMPLÈTE
+            // INFOBULLE AU SURVOL AVEC DÉTAILS COMPLETS
             badge.title = `Groupe N°${p.numGroupe} - ${p.nom} ${p.prenom}\n📞 Téléphone : ${p.telephone}\nEffectif : ${nb} pers.\nDépart: ${p.depart} | R1: ${p.ravito1 || '-'} | R2: ${p.ravito2 || '-'} | Arrivée: ${p.arrivee || '-'}`;
             
-            // VISIBLE DANS LA PASTILLE : NOM ET EFFECTIF SEULEMENT
+            // PASTILLE ÉPURÉE : NOM ET EFFECTIF SEULEMENT
             badge.innerHTML = `<span>${p.nom}</span><span>(${nb}p)</span>`;
 
             if (p.arrivee) {
