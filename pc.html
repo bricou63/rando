@@ -20,25 +20,25 @@
       background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 20px 20px 190px 20px;
+      padding: 16px 16px 175px 16px;
       box-sizing: border-box;
     }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
     }
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
       display: flex;
       align-items: center;
       gap: 10px;
     }
     .btn {
-      padding: 10px 16px;
+      padding: 9px 14px;
       border: none;
       border-radius: 6px;
       font-weight: 600;
@@ -46,8 +46,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 6px;
+      font-size: 13px;
       text-decoration: none;
       box-sizing: border-box;
     }
@@ -55,102 +55,117 @@
     .btn-primary { background: var(--primary); color: white; }
     .btn-dark { background: var(--slate); color: white; }
     .btn-success { background: var(--success); color: white; }
-    .btn-neutral { background: #e2e8f0; color: var(--text); }
     
-    /* DISPOSITION EN 2 GRANDES FENÊTRES */
+    /* DISPOSITION COMPACTE EN 2 COLONNES */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      gap: 16px;
     }
     .card {
       background: var(--card);
-      padding: 22px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
       border: 1px solid var(--border);
     }
     h2 {
       margin-top: 0;
-      font-size: 18px;
+      margin-bottom: 10px;
+      font-size: 16px;
       border-bottom: 2px solid var(--bg);
-      padding-bottom: 10px;
+      padding-bottom: 6px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .sub-box {
       background: #f8fafc;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 14px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
     }
     .sub-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: #475569;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       display: block;
     }
-    .row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
     .row .col { flex: 1; }
-    label { font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px; }
+    label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px; }
     input {
       width: 100%;
-      padding: 10px;
+      padding: 8px 10px;
       border: 1px solid var(--border);
       border-radius: 6px;
       box-sizing: border-box;
-      font-size: 14px;
+      font-size: 13px;
     }
 
+    /* CAMÉRA RÉDUITE ET COMPACTE */
     .scanner-zone {
       display: none;
       width: 100%;
-      border-radius: 8px;
+      max-height: 140px;
+      border-radius: 6px;
       overflow: hidden;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       background: #000;
     }
+    .scanner-zone video {
+      max-height: 140px !important;
+      object-fit: cover;
+    }
+
+    /* BANDEAUX DE FEEDBACK TRÈS VISIBLES */
+    .banner-feedback {
+      display: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      animation: pulse 0.3s ease-in-out;
+    }
+    .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
+    .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
+    .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+
     .scanned-list {
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 8px;
-      max-height: 120px;
+      padding: 6px 10px;
+      max-height: 90px;
       overflow-y: auto;
-      margin: 8px 0;
+      margin: 6px 0;
     }
     .scanned-item {
-      font-size: 13px;
-      padding: 4px 0;
+      font-size: 12px;
+      padding: 3px 0;
       border-bottom: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-between;
     }
-    .msg-feedback {
-      margin-top: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-      min-height: 18px;
-    }
 
-    /* FRISE FIXÉE EN BAS */
+    /* FRISE DU BAS COMPACTE */
     #progress-tracker {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 165px;
+      height: 155px;
       background: #ffffff;
       border-top: 2px solid #e2e8f0;
       box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
-      padding: 10px 20px;
+      padding: 8px 16px;
       box-sizing: border-box;
       z-index: 1000;
     }
@@ -158,13 +173,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .tracker-lanes {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      height: 110px;
+      gap: 8px;
+      height: 105px;
     }
     .lane {
       background: #f8fafc;
@@ -180,22 +195,24 @@
       text-transform: uppercase;
       color: #475569;
       background: #e2e8f0;
-      padding: 5px 8px;
+      padding: 4px 6px;
       border-bottom: 1px solid #cbd5e1;
     }
     .lane-content {
-      padding: 6px;
+      padding: 4px 6px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       flex: 1;
     }
+    
+    /* PASTILLE DE LA FRISE : NOM ET EFFECTIF SEULEMENT */
     .badge-group {
       background: #e0e7ff;
       color: #1e3a8a;
       font-size: 11px;
-      padding: 4px 6px;
+      padding: 3px 6px;
       border-radius: 4px;
       font-weight: 600;
       border: 1px solid #c7d2fe;
@@ -214,23 +231,28 @@
 
   <div class="grid">
     <!-- ========================================================== -->
-    <!-- FENÊTRE GAUCHE : TOUS LES DÉPARTS (QR ET MANUEL) -->
+    <!-- FENÊTRE GAUCHE : DÉPARTS (QR ET MANUEL) -->
     <!-- ========================================================== -->
     <div class="card" style="border-top: 4px solid var(--primary);">
       <h2>🚩 Enregistrement des Départs</h2>
 
-      <!-- Mode QR Code Groupe -->
+      <!-- SECTION DÉPART QR AU-DESSUS -->
       <div class="sub-box">
-        <span class="sub-title">Option A : Départ par Billet(s) QR Code</span>
-        <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:8px;" onclick="toggleScanner('reader-dep', 'btnCamDep', traiterScanDepart)">📷 Allumer Webcam Départ (Enchaîner Scans)</button>
+        <span class="sub-title">1. Scanner le ou les billets du groupe (QR Code)</span>
+        
+        <!-- BANDEAU D'ÉTAT DÉPART EN GRAND AU-DESSUS -->
+        <div id="bannerDepStatus" class="banner-feedback"></div>
+
+        <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-dep', 'btnCamDep', traiterScanDepart)">📷 Allumer Webcam Départ</button>
         <div id="reader-dep" class="scanner-zone"></div>
         
-        <div id="boxScannedDep" style="display:none;">
-          <div style="font-size:13px; font-weight:700;" id="depCountText">Groupe : 0 personne(s)</div>
+        <!-- Liste des membres scannés et confirmation téléphone -->
+        <div id="boxScannedDep" style="display:none; margin-top:6px;">
+          <div style="font-size:12px; font-weight:700; color:#1e293b;" id="depCountText">Membres du groupe : 0</div>
           <div class="scanned-list" id="depMembersList"></div>
-          <div class="row">
+          <div class="row" style="margin-bottom:0; margin-top:6px;">
             <div class="col">
-              <input type="tel" id="depTelQR" placeholder="Téléphone référent (06...)">
+              <input type="tel" id="depTelQR" placeholder="📞 Tél. du référent (06...)">
             </div>
             <div class="col" style="flex:0 0 auto;">
               <button class="btn btn-success" type="button" onclick="validerDepartGroupeQR()">Valider Départ QR</button>
@@ -239,9 +261,9 @@
         </div>
       </div>
 
-      <!-- Mode Manuel sans Billet -->
+      <!-- SECTION DÉPART MANUEL EN DESSOUS -->
       <div class="sub-box" style="margin-bottom:0;">
-        <span class="sub-title">Option B : Départ Manuel (Sans QR Code)</span>
+        <span class="sub-title">2. Ou Nouveau Départ Manuel (Sans Billet)</span>
         <form id="formManPC">
           <div class="row">
             <div class="col"><label>Nom *</label><input type="text" id="pcNom" required></div>
@@ -249,59 +271,62 @@
           </div>
           <div class="row">
             <div class="col"><label>Téléphone *</label><input type="tel" id="pcTel" placeholder="06..." required></div>
-            <div class="col"><label>Nombre de personnes *</label><input type="number" id="pcNb" min="1" value="1" required></div>
+            <div class="col" style="max-width:110px;"><label>Nb pers. *</label><input type="number" id="pcNb" min="1" value="1" required></div>
           </div>
           <button type="submit" class="btn btn-primary" id="btnSubmitPC" style="width:100%;">Valider le Départ Manuel</button>
         </form>
       </div>
-      <div id="msgDepPC" class="msg-feedback"></div>
+      <div id="msgDepManuelle" style="margin-top:6px; font-size:12px; font-weight:700; text-align:center;"></div>
     </div>
 
     <!-- ========================================================== -->
-    <!-- FENÊTRE DROITE : ARRIVÉE ET RAVITAILLEMENTS -->
+    <!-- FENÊTRE DROITE : ARRIVÉE & RAVITAILLEMENTS -->
     <!-- ========================================================== -->
     <div class="card" style="border-top: 4px solid var(--success);">
       <h2>🏁 Arrivée & Contrôle Ravitaillements</h2>
 
-      <!-- Pointage Arrivée Direct -->
+      <!-- POINTAGE ARRIVÉE DIRECT AVEC BANDEAU FLASH -->
       <div class="sub-box">
-        <span class="sub-title">Pointage Rapide Arrivée</span>
-        <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:8px;" onclick="toggleScanner('reader-arr', 'btnCamArr', validerArriveeDirecte)">📷 Allumer Webcam Arrivée</button>
+        <span class="sub-title">1. Pointage Rapide Arrivée</span>
+        
+        <!-- BANDEAU DE VALIDATION ARRIVÉE TRÈS VISIBLE -->
+        <div id="bannerArrStatus" class="banner-feedback"></div>
+
+        <button class="btn btn-dark" type="button" id="btnCamArr" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-arr', 'btnCamArr', validerArriveeDirecte)">📷 Allumer Webcam Arrivée</button>
         <div id="reader-arr" class="scanner-zone"></div>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="inputArrDirect" placeholder="N° Dossard ou QR billet...">
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="inputArrDirect" placeholder="Scanner QR ou taper N° Dossard...">
           <button class="btn btn-success" type="button" onclick="validerArriveeParInput()">Valider Arrivée</button>
         </div>
-        <div id="msgArrPC" class="msg-feedback"></div>
       </div>
 
-      <!-- Pointage Secours & Ravitaillements -->
+      <!-- SECOURS & RAVITAILLEMENTS -->
       <div class="sub-box" style="margin-bottom:0;">
-        <span class="sub-title">Recherche & Pointage Ravitaillements</span>
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
-          <input type="text" id="pcSearchQuery" placeholder="Rechercher N° Dossard ou QR..." style="flex:1;">
+        <span class="sub-title">2. Recherche & Pointage Ravitaillements</span>
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+          <input type="text" id="pcSearchQuery" placeholder="N° Dossard ou QR billet..." style="flex:1;">
           <button class="btn btn-primary" type="button" onclick="chercherPC(document.getElementById('pcSearchQuery').value)">Chercher</button>
         </div>
 
-        <div id="recapPC" style="display:none; background:#ffffff; padding:12px; border-radius:6px; border:1px solid var(--border);">
-          <p style="margin:0 0 4px 0;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
-          <p style="margin:0 0 10px 0; font-size:12px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
+        <div id="recapPC" style="display:none; background:#ffffff; padding:10px; border-radius:6px; border:1px solid var(--border);">
+          <p style="margin:0 0 3px 0; font-size:13px;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
+          <p style="margin:0 0 8px 0; font-size:11px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
           <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
-            <button class="btn btn-primary" style="font-size:12px; padding:8px 4px;" type="button" onclick="validerPostePC('ravito1')">Ravitaillement 1</button>
-            <button class="btn btn-primary" style="font-size:12px; padding:8px 4px;" type="button" onclick="validerPostePC('ravito2')">Ravitaillement 2</button>
-            <button class="btn btn-sheet" style="font-size:12px; padding:8px 4px;" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
+            <button class="btn btn-primary" style="font-size:11px; padding:6px 2px;" type="button" onclick="validerPostePC('ravito1')">Ravitaillement 1</button>
+            <button class="btn btn-primary" style="font-size:11px; padding:6px 2px;" type="button" onclick="validerPostePC('ravito2')">Ravitaillement 2</button>
+            <button class="btn btn-sheet" style="font-size:11px; padding:6px 2px;" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
           </div>
         </div>
-        <div id="msgPointagePC" class="msg-feedback"></div>
+        <div id="msgPointagePC" style="margin-top:6px; font-size:12px; font-weight:700; text-align:center;"></div>
       </div>
     </div>
   </div>
 
-  <!-- BANDE D'AVANCEMENT EN BAS -->
+  <!-- BANDE D'AVANCEMENT FIXÉE EN BAS -->
   <div id="progress-tracker">
     <div class="tracker-header">
-      <span style="font-weight:700; font-size:12px; color:#334155;">AVANCEMENT DU CIRCUIT (SURVOLER POUR AFFICHER LE TÉLÉPHONE ET LES TEMPS)</span>
-      <span id="trackerTimer" style="font-size:12px; color:#64748b;">Mise à jour...</span>
+      <span style="font-weight:700; font-size:11px; color:#334155;">AVANCEMENT DU CIRCUIT (SURVOLER LES GROUPES POUR LES DÉTAILS)</span>
+      <span id="trackerTimer" style="font-size:11px; color:#64748b;">Mise à jour...</span>
     </div>
     <div class="tracker-lanes">
       <div class="lane"><div class="lane-title" id="t-dep">En Course (0p)</div><div class="lane-content" id="l-dep"></div></div>
@@ -321,7 +346,6 @@
     let activeScannerId = null;
     let targetNumGroupe = null;
 
-    // État départ QR
     let depBillets = [];
     let depTicketsSet = new Set();
     let depScanPause = false;
@@ -339,7 +363,7 @@
       return texte;
     }
 
-    // Gestion Caméra unique (ne démarre qu'une caméra à la fois)
+    // Gestion Caméra Compacte
     async function stopScanner() {
       if (activeScanner) {
         try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
@@ -350,7 +374,7 @@
         if (el) { el.style.display = "none"; el.innerHTML = ""; }
       }
       document.getElementById("btnCamArr").textContent = "📷 Allumer Webcam Arrivée";
-      document.getElementById("btnCamDep").textContent = "📷 Allumer Webcam Départ (Enchaîner Scans)";
+      document.getElementById("btnCamDep").textContent = "📷 Allumer Webcam Départ";
       activeScannerId = null;
     }
 
@@ -369,7 +393,7 @@
       activeScanner = new Html5Qrcode(readerId);
       activeScanner.start(
         { facingMode: "user" },
-        { fps: 12, qrbox: { width: 220, height: 220 } },
+        { fps: 12, qrbox: { width: 150, height: 110 } },
         (decodedText) => {
           const num = extraireNumeroBillet(decodedText);
           onScanCallback(num);
@@ -382,15 +406,19 @@
     }
 
     // -------------------------------------------------------------
-    // GAUCHE : DÉPART QR
+    // DÉPART QR : FEEDBACK VISUEL CLAIR AU-DESSUS
     // -------------------------------------------------------------
+    function afficherFeedbackDepart(msg, type) {
+      const b = document.getElementById("bannerDepStatus");
+      b.className = "banner-feedback " + (type === "loading" ? "banner-loading" : (type === "success" ? "banner-success" : "banner-error"));
+      b.innerHTML = msg;
+    }
+
     function traiterScanDepart(numTicket) {
       if (depScanPause || depTicketsSet.has(numTicket)) return;
       depScanPause = true;
 
-      const msg = document.getElementById("msgDepPC");
-      msg.style.color = "#1e293b";
-      msg.textContent = `Vérification du billet #${numTicket}...`;
+      afficherFeedbackDepart(`⏳ Recherche du billet <strong>#${numTicket}</strong> dans HelloAsso...`, "loading");
 
       fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, {
         method: "GET",
@@ -402,16 +430,13 @@
           depTicketsSet.add(numTicket);
           depBillets.push(d);
           actualiserVisuelDepartQR();
-          msg.style.color = "green";
-          msg.textContent = `Ajouté : ${d.prenom} ${d.nom}`;
+          afficherFeedbackDepart(`✅ Ajouté au groupe : <strong>${d.prenom} ${d.nom}</strong> (#${numTicket})`, "success");
         } else {
-          msg.style.color = "red";
-          msg.textContent = `Billet #${numTicket} non trouvé dans HelloAsso.`;
+          afficherFeedbackDepart(`❌ Billet #${numTicket} non trouvé dans HelloAsso.`, "error");
         }
       })
       .catch(() => {
-        msg.style.color = "red";
-        msg.textContent = "Erreur de communication.";
+        afficherFeedbackDepart("❌ Erreur de communication avec le serveur.", "error");
       })
       .finally(() => {
         setTimeout(() => { depScanPause = false; }, 1200);
@@ -428,25 +453,21 @@
         item.innerHTML = `<span><strong>${idx+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span>`;
         listEl.appendChild(item);
       });
-      document.getElementById("depCountText").textContent = `Groupe : ${depBillets.length} personne(s)`;
+      document.getElementById("depCountText").textContent = `Membres du groupe : ${depBillets.length} personne(s)`;
     }
 
     function validerDepartGroupeQR() {
       const tel = document.getElementById("depTelQR").value.trim();
-      const msg = document.getElementById("msgDepPC");
       if (!tel) {
-        msg.style.color = "red";
-        msg.textContent = "Numéro de téléphone requis pour le référent.";
+        afficherFeedbackDepart("⚠️ Veuillez renseigner le numéro de téléphone du référent.", "error");
         return;
       }
       if (depBillets.length === 0) {
-        msg.style.color = "red";
-        msg.textContent = "Aucun billet scanné.";
+        afficherFeedbackDepart("⚠️ Veuillez scanner au moins un billet.", "error");
         return;
       }
 
-      msg.style.color = "#1e293b";
-      msg.textContent = "Enregistrement du départ QR...";
+      afficherFeedbackDepart("⏳ Enregistrement du départ du groupe en cours...", "loading");
 
       const referent = depBillets[0];
       const listeTickets = Array.from(depTicketsSet);
@@ -467,8 +488,7 @@
       })
       .then(r => r.json())
       .then(res => {
-        msg.style.color = "green";
-        msg.textContent = `✅ Départ validé ! N° Participation : ${res.numGroupe} (${referent.nom} - ${depBillets.length} pers.)`;
+        afficherFeedbackDepart(`✅ DÉPART VALIDÉ ! N° Participation : <strong>${res.numGroupe}</strong> (${referent.nom} - ${depBillets.length} pers.)`, "success");
         depBillets = [];
         depTicketsSet.clear();
         document.getElementById("depMembersList").innerHTML = "";
@@ -478,21 +498,20 @@
         setTimeout(refreshTracker, 600);
       })
       .catch(() => {
-        msg.style.color = "red";
-        msg.textContent = "Erreur d'enregistrement.";
+        afficherFeedbackDepart("❌ Erreur lors de l'enregistrement.", "error");
       });
     }
 
     // -------------------------------------------------------------
-    // GAUCHE : DÉPART MANUEL
+    // DÉPART MANUEL
     // -------------------------------------------------------------
     document.getElementById("formManPC").addEventListener("submit", (e) => {
       e.preventDefault();
       const btn = document.getElementById("btnSubmitPC");
-      const msg = document.getElementById("msgDepPC");
+      const msg = document.getElementById("msgDepManuelle");
       btn.disabled = true;
       msg.style.color = "#1e293b";
-      msg.textContent = "Enregistrement du départ manuel...";
+      msg.textContent = "Enregistrement du départ...";
 
       const prenom = document.getElementById("pcPrenom").value.trim();
       const nom = document.getElementById("pcNom").value.trim();
@@ -531,8 +550,14 @@
     });
 
     // -------------------------------------------------------------
-    // DROITE : ARRIVÉE DIRECTE
+    // ARRIVÉE DIRECTE AVEC FEEDBACK GRAND FORMAT
     // -------------------------------------------------------------
+    function afficherFeedbackArrivee(msg, type) {
+      const b = document.getElementById("bannerArrStatus");
+      b.className = "banner-feedback " + (type === "loading" ? "banner-loading" : (type === "success" ? "banner-success" : "banner-error"));
+      b.innerHTML = msg;
+    }
+
     function validerArriveeParInput() {
       const q = extraireNumeroBillet(document.getElementById("inputArrDirect").value);
       if (q) validerArriveeDirecte(q);
@@ -543,9 +568,7 @@
     });
 
     function validerArriveeDirecte(num) {
-      const msg = document.getElementById("msgArrPC");
-      msg.style.color = "#1e293b";
-      msg.textContent = `Pointage Arrivée #${num}...`;
+      afficherFeedbackArrivee(`⏳ Validation de l'Arrivée pour <strong>#${num}</strong>...`, "loading");
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -555,23 +578,20 @@
       .then(r => r.json())
       .then(res => {
         if (res && res.success) {
-          msg.style.color = "green";
-          msg.textContent = `✅ Arrivée validée à ${res.heure} pour #${num} !`;
+          afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${res.heure}</strong> pour #${num} !`, "success");
           document.getElementById("inputArrDirect").value = "";
           setTimeout(refreshTracker, 600);
         } else {
-          msg.style.color = "red";
-          msg.textContent = "Numéro introuvable sur le circuit.";
+          afficherFeedbackArrivee(`❌ Dossard #${num} introuvable sur le circuit.`, "error");
         }
       })
       .catch(() => {
-        msg.style.color = "red";
-        msg.textContent = "Erreur de connexion.";
+        afficherFeedbackArrivee("❌ Erreur de communication réseau.", "error");
       });
     }
 
     // -------------------------------------------------------------
-    // DROITE : RECHERCHE SECOURS & RAVITAILLEMENTS
+    // RECHERCHE SECOURS & RAVITAILLEMENTS
     // -------------------------------------------------------------
     document.getElementById("pcSearchQuery").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -646,7 +666,7 @@
     }
 
     // -------------------------------------------------------------
-    // FRISE D'AVANCEMENT
+    // FRISE D'AVANCEMENT (SANS NUMÉRO DANS LA PASTILLE)
     // -------------------------------------------------------------
     function refreshTracker() {
       fetch(`${SCRIPT_URL}?action=getAll`, { method: "GET", redirect: "follow" })
@@ -662,8 +682,12 @@
             const nb = parseInt(p.nbPers) || 1;
             const badge = document.createElement("div");
             badge.className = "badge-group";
+            
+            // INFOBULLE COMPLÈTE AU SURVOL (AVEC N° DE DÉPART ET TÉLÉPHONE)
             badge.title = `Groupe N°${p.numGroupe} - ${p.nom} ${p.prenom}\n📞 Téléphone : ${p.telephone}\nEffectif : ${nb} pers.\nDépart: ${p.depart} | R1: ${p.ravito1 || '-'} | R2: ${p.ravito2 || '-'} | Arrivée: ${p.arrivee || '-'}`;
-            badge.innerHTML = `<span>#${p.numGroupe} ${p.nom}</span><span>(${nb}p)</span>`;
+            
+            // CONTENU VISIBLE DANS LA PASTILLE : NOM ET EFFECTIF UNIQUEMENT
+            badge.innerHTML = `<span>${p.nom}</span><span>(${nb}p)</span>`;
 
             if (p.arrivee) {
               document.getElementById("l-arr").appendChild(badge);
