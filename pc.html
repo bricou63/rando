@@ -56,7 +56,7 @@
     .btn-dark { background: var(--slate); color: white; }
     .btn-success { background: var(--success); color: white; }
     
-    /* DISPOSITION COMPACTE EN 2 COLONNES */
+    /* DISPOSITION EN 2 COLONNES */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -106,19 +106,20 @@
       font-size: 13px;
     }
 
-    /* CAMÉRA RÉDUITE ET COMPACTE */
+    /* ZONE CAMÉRA STABLE & LISIBLE */
     .scanner-zone {
       display: none;
       width: 100%;
-      max-height: 140px;
-      border-radius: 6px;
+      height: 220px;
+      border-radius: 8px;
       overflow: hidden;
       margin-bottom: 8px;
       background: #000;
     }
     .scanner-zone video {
-      max-height: 140px !important;
-      object-fit: cover;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
     }
 
     /* BANDEAUX DE FEEDBACK TRÈS VISIBLES */
@@ -130,7 +131,6 @@
       font-weight: 700;
       text-align: center;
       margin-bottom: 8px;
-      animation: pulse 0.3s ease-in-out;
     }
     .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
     .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
@@ -363,7 +363,7 @@
       return texte;
     }
 
-    // Gestion Caméra Compacte
+    // Gestion Caméra Pleine Résolution
     async function stopScanner() {
       if (activeScanner) {
         try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
@@ -391,9 +391,17 @@
       document.getElementById(btnId).textContent = "🛑 Éteindre Webcam";
 
       activeScanner = new Html5Qrcode(readerId);
+      
+      // Configuration optimale : pas de qrbox restrictive pour garder la haute résolution
+      const config = {
+        fps: 15,
+        aspectRatio: 1.333333,
+        disableFlip: false
+      };
+
       activeScanner.start(
         { facingMode: "user" },
-        { fps: 12, qrbox: { width: 150, height: 110 } },
+        config,
         (decodedText) => {
           const num = extraireNumeroBillet(decodedText);
           onScanCallback(num);
@@ -683,10 +691,10 @@
             const badge = document.createElement("div");
             badge.className = "badge-group";
             
-            // INFOBULLE COMPLÈTE AU SURVOL (AVEC N° DE DÉPART ET TÉLÉPHONE)
+            // INFOBULLE AU SURVOL COMPLÈTE
             badge.title = `Groupe N°${p.numGroupe} - ${p.nom} ${p.prenom}\n📞 Téléphone : ${p.telephone}\nEffectif : ${nb} pers.\nDépart: ${p.depart} | R1: ${p.ravito1 || '-'} | R2: ${p.ravito2 || '-'} | Arrivée: ${p.arrivee || '-'}`;
             
-            // CONTENU VISIBLE DANS LA PASTILLE : NOM ET EFFECTIF UNIQUEMENT
+            // VISIBLE DANS LA PASTILLE : NOM ET EFFECTIF SEULEMENT
             badge.innerHTML = `<span>${p.nom}</span><span>(${nb}p)</span>`;
 
             if (p.arrivee) {
