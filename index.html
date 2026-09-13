@@ -3,258 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pointage Course Mobile</title>
+  <title>Départs - Pointage Course</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    :root {
-      --primary: #2563eb;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --slate: #0f172a;
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --border: #cbd5e1;
-      --text: #0f172a;
-    }
+    :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --slate: #0f172a; --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1; --text: #0f172a; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 12px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 12px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--slate);
-    }
-    
-    /* ONGLETS */
-    .tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-      background: #e2e8f0;
-      padding: 4px;
-      border-radius: 8px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 9px;
-      border: none;
-      background: transparent;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 13px;
-      color: #475569;
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: #ffffff;
-      color: var(--primary);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .card {
-      background: var(--card);
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-      margin-bottom: 12px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px 14px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 14px;
-    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; }
+    header { text-align: center; margin-bottom: 12px; }
+    h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary); }
+    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.04); margin-bottom: 12px; }
+    .btn { width: 100%; padding: 12px 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-success { background: var(--success); color: white; }
     .btn-dark { background: var(--slate); color: white; }
-    .btn-danger { background: var(--danger); color: white; }
-
-    /* CAMÉRA MOBILE OPTIMISÉE */
-    .scanner-wrapper {
-      display: none;
-      width: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 12px;
-      background: #000;
-    }
-    #reader { width: 100% !important; }
+    .scanner-wrapper { display: none; width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #000; }
     #reader video { object-fit: cover !important; }
-
-    .feedback-banner {
-      display: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 12px;
-    }
+    .feedback-banner { display: none; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; }
     .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
     .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
     .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
-
     .form-group { margin-bottom: 10px; }
     label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px; color: #334155; }
-    input, select {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 15px;
-      background: #ffffff;
-    }
-
-    .scanned-list {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px;
-      max-height: 140px;
-      overflow-y: auto;
-      margin: 8px 0;
-    }
-    .scanned-item {
-      font-size: 13px;
-      padding: 6px 0;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-    }
+    input { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background: #ffffff; }
+    .scanned-list { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 8px; max-height: 140px; overflow-y: auto; margin: 8px 0; }
+    .scanned-item { font-size: 13px; padding: 6px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>📱 Pointage Terrain</h1>
-  </header>
-
-  <div class="tabs">
-    <button class="tab-btn active" id="tabDepart" onclick="switchMode('depart')">🚩 Départs</button>
-    <button class="tab-btn" id="tabPassage" onclick="switchMode('passage')">⏱️ Postes / Arrivée</button>
-  </div>
-
-  <!-- BANDEAU DE STATUT GLOBAL -->
+  <header><h1>🚩 Enregistrement Départs</h1></header>
   <div id="bannerFeedback" class="feedback-banner"></div>
 
-  <!-- ZONE CAMÉRA COMMUNE -->
-  <div id="scannerBox" class="scanner-wrapper">
-    <div id="reader"></div>
-  </div>
+  <div id="scannerBox" class="scanner-wrapper"><div id="reader"></div></div>
 
-  <!-- ========================================================== -->
-  <!-- VUE 1 : DÉPARTS (QR & MANUEL) -->
-  <!-- ========================================================== -->
-  <div id="viewDepart">
-    <!-- SCAN BILLET -->
-    <div class="card">
-      <button class="btn btn-dark" type="button" id="btnCamDep" onclick="toggleCamera('depart')">📷 Scanner Billet(s) QR</button>
-      
-      <div id="boxScannedDep" style="display:none; margin-top:12px;">
-        <div style="font-weight:700; font-size:13px;" id="txtDepCount">Groupe : 0 pers.</div>
-        <div class="scanned-list" id="listDepScanned"></div>
-        <div class="form-group" style="margin-top:10px;">
-          <label>Téléphone du référent *</label>
-          <input type="tel" id="depTel" placeholder="06 12 34 56 78">
-        </div>
-        <button class="btn btn-success" type="button" onclick="validerDepartQR()">Valider le Départ QR</button>
+  <div class="card">
+    <button class="btn btn-dark" type="button" id="btnCam" onclick="toggleCamera()">📷 Scanner Billet(s) QR</button>
+    <div id="boxScannedDep" style="display:none; margin-top:12px;">
+      <div style="font-weight:700; font-size:13px;" id="txtDepCount">Groupe : 0 pers.</div>
+      <div class="scanned-list" id="listDepScanned"></div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>Téléphone du référent *</label>
+        <input type="tel" id="depTel" placeholder="06 12 34 56 78">
       </div>
-    </div>
-
-    <!-- NOUVEAU DÉPART MANUEL -->
-    <div class="card">
-      <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#475569;">OU DÉPART SANS BILLET (MANUEL)</div>
-      <form id="formDepManuel">
-        <div class="form-group">
-          <label>Nom *</label>
-          <input type="text" id="mNom" required>
-        </div>
-        <div class="form-group">
-          <label>Prénom *</label>
-          <input type="text" id="mPrenom" required>
-        </div>
-        <div class="form-group">
-          <label>Téléphone *</label>
-          <input type="tel" id="mTel" placeholder="06..." required>
-        </div>
-        <div class="form-group">
-          <label>Nombre de personnes *</label>
-          <input type="number" id="mNb" min="1" value="1" required>
-        </div>
-        <button class="btn btn-primary" type="submit" id="btnSubmitManuel">Valider Départ Manuel</button>
-      </form>
+      <button class="btn btn-success" type="button" onclick="validerDepartQR()">Valider le Départ QR</button>
     </div>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- VUE 2 : RAVITAILLEMENTS & ARRIVÉE -->
-  <!-- ========================================================== -->
-  <div id="viewPassage" style="display:none;">
-    <div class="card">
-      <div class="form-group">
-        <label>Sélectionner le poste actif :</label>
-        <select id="selectPoste">
-          <option value="ravito1">Ravitaillement 1</option>
-          <option value="ravito2">Ravitaillement 2</option>
-          <option value="arrivee" selected>Arrivée</option>
-        </select>
-      </div>
-
-      <button class="btn btn-dark" type="button" id="btnCamPassage" style="margin-bottom:10px;" onclick="toggleCamera('passage')">📷 Scanner QR Code</button>
-
-      <div style="display:flex; gap:6px;">
-        <input type="text" id="inputPassageManual" placeholder="Ou taper N° de dossard...">
-        <button class="btn btn-primary" type="button" style="width:auto; padding:0 16px;" onclick="validerPassageDirect(document.getElementById('inputPassageManual').value)">Valider</button>
-      </div>
-    </div>
-
-    <!-- RECAPITULATIF TROUVÉ -->
-    <div class="card" id="cardRecapPassage" style="display:none; border-left: 5px solid var(--success);">
-      <div style="font-size:15px; font-weight:800; margin-bottom:4px;" id="recNom"></div>
-      <div style="font-size:13px; color:#475569; margin-bottom:12px;">
-        Dossard : <strong id="recNum"></strong> | Effectif : <span id="recNb"></span> pers.
-      </div>
-      <button class="btn btn-success" type="button" onclick="confirmerValidationPassage()">Confirmer le Passage</button>
-    </div>
+  <div class="card">
+    <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#475569;">OU DÉPART MANUEL (SANS BILLET)</div>
+    <form id="formDepManuel">
+      <div class="form-group"><label>Nom *</label><input type="text" id="mNom" required></div>
+      <div class="form-group"><label>Prénom *</label><input type="text" id="mPrenom" required></div>
+      <div class="form-group"><label>Téléphone *</label><input type="tel" id="mTel" placeholder="06..." required></div>
+      <div class="form-group"><label>Nombre de personnes *</label><input type="number" id="mNb" min="1" value="1" required></div>
+      <button class="btn btn-primary" type="submit" id="btnSubmitManuel">Valider Départ Manuel</button>
+    </form>
   </div>
 
   <script>
-    // =========================================================================
-    // CONFIGURATION URL DU SCRIPT APPS SCRIPT
-    // =========================================================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec"; // Remplacez par votre URL /exec
-
-    let activeMode = "depart";
-    let html5QrCode = null;
-    let isScanningLocked = false;
-
-    // État départ QR
-    let depBillets = [];
-    let depTicketsSet = new Set();
-    let currentPassageGroupe = null;
-
-    // =========================================================================
-    // EFFETS SONORES (WEB AUDIO API NATIVE - SANS FICHIER MP3)
-    // =========================================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
+    let html5QrCode = null, isScanningLocked = false;
+    let depBillets = [], depTicketsSet = new Set();
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -262,345 +70,80 @@
       if (!audioCtx) audioCtx = new AudioContext();
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
+    function soundBip() { try { initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = "sine"; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.08); } catch(e){} }
+    function soundTing() { try { initAudio(); const now = audioCtx.currentTime, osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc1.type = "triangle"; osc1.frequency.setValueAtTime(523.25, now); osc1.frequency.setValueAtTime(659.25, now + 0.08); osc2.type = "sine"; osc2.frequency.setValueAtTime(1046.50, now + 0.08); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4); osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination); osc1.start(now); osc2.start(now + 0.08); osc1.stop(now + 0.4); osc2.stop(now + 0.4); } catch(e){} }
+    function soundBuzz() { try { initAudio(); const now = audioCtx.currentTime; function playTut(t){ const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = "sawtooth"; osc.frequency.setValueAtTime(180, t); gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.12); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.12); } playTut(now); playTut(now + 0.16); } catch(e){} }
+    function extraireNumeroBillet(t) { var txt=(t||"").trim(); if(/^\d+$/.test(txt)) return txt; try { var dec = atob(txt); if(dec.indexOf(":") !== -1) return dec.split(":")[0].trim(); }catch(e){} return txt; }
+    function showBanner(msg, type) { const b = document.getElementById("bannerFeedback"); b.className = "feedback-banner banner-" + type; b.innerHTML = msg; }
 
-    // 1. Bip court au scan
-    function soundBip() {
-      try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // La (A5)
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
-      } catch (e) {}
-    }
-
-    // 2. Ting mélodieux (validation / succès)
-    function soundTing() {
-      try {
-        initAudio();
-        const now = audioCtx.currentTime;
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc1.type = "triangle";
-        osc1.frequency.setValueAtTime(523.25, now); // Do5
-        osc1.frequency.setValueAtTime(659.25, now + 0.08); // Mi5
-
-        osc2.type = "sine";
-        osc2.frequency.setValueAtTime(1046.50, now + 0.08); // Do6
-
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc1.start(now);
-        osc2.start(now + 0.08);
-        osc1.stop(now + 0.4);
-        osc2.stop(now + 0.4);
-      } catch (e) {}
-    }
-
-    // 3. Double buzz tut-tut grave (erreur / inconnu)
-    function soundBuzz() {
-      try {
-        initAudio();
-        const now = audioCtx.currentTime;
-        
-        function playTut(time) {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = "sawtooth";
-          osc.frequency.setValueAtTime(180, time);
-          gain.gain.setValueAtTime(0.25, time);
-          gain.gain.linearRampToValueAtTime(0.01, time + 0.12);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(time);
-          osc.stop(time + 0.12);
-        }
-
-        playTut(now);
-        playTut(now + 0.16);
-      } catch (e) {}
-    }
-
-    // =========================================================================
-    // DÉCODAGE BASE64 BILLET
-    // =========================================================================
-    function extraireNumeroBillet(texteScanne) {
-      var texte = (texteScanne || "").trim();
-      if (/^\d+$/.test(texte)) return texte;
-      try {
-        var decodage = atob(texte);
-        if (decodage.indexOf(":") !== -1) {
-          return decodage.split(":")[0].trim();
-        }
-      } catch (e) {}
-      return texte;
-    }
-
-    // =========================================================================
-    // GESTION CAMÉRA MOBILE RAPIDE
-    // =========================================================================
     async function stopCamera() {
-      if (html5QrCode) {
-        try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e) {}
-        html5QrCode = null;
-      }
+      if (html5QrCode) { try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e){} html5QrCode = null; }
       document.getElementById("scannerBox").style.display = "none";
-      document.getElementById("btnCamDep").textContent = "📷 Scanner Billet(s) QR";
-      document.getElementById("btnCamPassage").textContent = "📷 Scanner QR Code";
+      document.getElementById("btnCam").textContent = "📷 Scanner Billet(s) QR";
       isScanningLocked = false;
     }
 
-    async function toggleCamera(cible) {
+    async function toggleCamera() {
       initAudio();
-      if (html5QrCode) {
-        await stopCamera();
-        return;
-      }
-
-      const box = document.getElementById("scannerBox");
-      box.style.display = "block";
-      const btn = cible === "depart" ? document.getElementById("btnCamDep") : document.getElementById("btnCamPassage");
-      btn.textContent = "🛑 Éteindre Caméra";
-
+      if (html5QrCode) { await stopCamera(); return; }
+      document.getElementById("scannerBox").style.display = "block";
+      document.getElementById("btnCam").textContent = "🛑 Éteindre Caméra";
       html5QrCode = new Html5Qrcode("reader");
-
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 15, qrbox: { width: 220, height: 220 } },
-        (decodedText) => {
-          // ANTI-RAFALE : Bloque tout scan immédiat
+      html5QrCode.start( { facingMode: "environment" }, { fps: 15, qrbox: { width: 220, height: 220 } },
+        (txt) => {
           if (isScanningLocked) return;
           isScanningLocked = true;
-
-          soundBip(); // Bip immédiat au scan
-          const num = extraireNumeroBillet(decodedText);
-
-          // Couper la caméra tout de suite pour libérer 100% de la puissance
-          stopCamera().then(() => {
-            if (cible === "depart") {
-              traiterScanDepart(num);
-            } else {
-              validerPassageDirect(num);
-            }
-          });
-        },
-        () => {}
-      ).catch(err => {
-        soundBuzz();
-        showBanner("Caméra inaccessible : " + err, "error");
-        stopCamera();
-      });
+          soundBip();
+          const num = extraireNumeroBillet(txt);
+          stopCamera().then(() => traiterScanDepart(num));
+        }, ()=>{}
+      ).catch(e => { soundBuzz(); showBanner("Caméra inaccessible.", "error"); stopCamera(); });
     }
 
-    // =========================================================================
-    // NOTIFICATIONS
-    // =========================================================================
-    function showBanner(msg, type) {
-      const b = document.getElementById("bannerFeedback");
-      b.className = "feedback-banner " + (type === "loading" ? "banner-loading" : (type === "success" ? "banner-success" : "banner-error"));
-      b.innerHTML = msg;
-    }
-
-    function switchMode(mode) {
-      stopCamera();
-      activeMode = mode;
-      document.getElementById("viewDepart").style.display = mode === "depart" ? "block" : "none";
-      document.getElementById("viewPassage").style.display = mode === "passage" ? "block" : "none";
-      document.getElementById("tabDepart").className = "tab-btn " + (mode === "depart" ? "active" : "");
-      document.getElementById("tabPassage").className = "tab-btn " + (mode === "passage" ? "active" : "");
-      document.getElementById("bannerFeedback").style.display = "none";
-    }
-
-    // =========================================================================
-    // DÉPART : SCAN QR
-    // =========================================================================
     function traiterScanDepart(numTicket) {
-      if (depTicketsSet.has(numTicket)) {
-        soundBuzz();
-        showBanner(`⚠️ Le billet #${numTicket} est déjà dans le groupe.`, "error");
-        return;
-      }
-
+      if (depTicketsSet.has(numTicket)) { soundBuzz(); showBanner(`⚠️ Billet #${numTicket} déjà scanné.`, "error"); return; }
       showBanner(`⏳ Vérification du billet <strong>#${numTicket}</strong>...`, "loading");
-
-      fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, {
-        method: "GET",
-        redirect: "follow"
-      })
-      .then(r => r.json())
-      .then(d => {
+      fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, { method: "GET" })
+      .then(r => r.json()).then(d => {
         if (d && d.found) {
-          soundTing();
-          depTicketsSet.add(numTicket);
-          depBillets.push(d);
-          actualiserVisuelDepartQR();
+          soundTing(); depTicketsSet.add(numTicket); depBillets.push(d); actualiserVisuel();
           showBanner(`✅ Ajouté : <strong>${d.prenom} ${d.nom}</strong>`, "success");
-        } else {
-          soundBuzz();
-          showBanner(`❌ Billet #${numTicket} non trouvé dans HelloAsso.`, "error");
-        }
-      })
-      .catch(() => {
-        soundBuzz();
-        showBanner("❌ Erreur de réseau.", "error");
-      });
+        } else { soundBuzz(); showBanner(`❌ Billet #${numTicket} non trouvé.`, "error"); }
+      }).catch(() => { soundBuzz(); showBanner("❌ Erreur réseau.", "error"); });
     }
 
-    function actualiserVisuelDepartQR() {
+    function actualiserVisuel() {
       document.getElementById("boxScannedDep").style.display = "block";
-      const listEl = document.getElementById("listDepScanned");
-      listEl.innerHTML = "";
-      depBillets.forEach((b, idx) => {
-        const item = document.createElement("div");
-        item.className = "scanned-item";
-        item.innerHTML = `<span><strong>${idx+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span>`;
-        listEl.appendChild(item);
-      });
+      const l = document.getElementById("listDepScanned"); l.innerHTML = "";
+      depBillets.forEach((b, i) => { l.innerHTML += `<div class="scanned-item"><span><strong>${i+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span></div>`; });
       document.getElementById("txtDepCount").textContent = `Groupe : ${depBillets.length} personne(s)`;
     }
 
     function validerDepartQR() {
       initAudio();
       const tel = document.getElementById("depTel").value.trim();
-      if (!tel) {
-        soundBuzz();
-        showBanner("⚠️ Téléphone obligatoire pour le groupe.", "error");
-        return;
-      }
-
-      showBanner("⏳ Enregistrement du départ...", "loading");
-
-      const referent = depBillets[0];
-      const listeTickets = Array.from(depTicketsSet).join(", ");
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "creerGroupe",
-          nom: referent.nom,
-          prenom: referent.prenom,
-          email: referent.email,
-          telephone: tel,
-          nbPers: depBillets.length,
-          codesBillets: listeTickets
-        })
-      })
-      .then(r => r.json())
-      .then(res => {
+      if (!tel) { soundBuzz(); showBanner("⚠️ Téléphone obligatoire.", "error"); return; }
+      if (depBillets.length === 0) { soundBuzz(); showBanner("⚠️ Aucun billet.", "error"); return; }
+      showBanner("⏳ Enregistrement...", "loading");
+      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: depBillets[0].nom, prenom: depBillets[0].prenom, email: depBillets[0].email, telephone: tel, nbPers: depBillets.length, codesBillets: Array.from(depTicketsSet).join(", ") }) })
+      .then(r => r.json()).then(res => {
         if (res && res.success) {
-          soundTing();
-          showBanner(`🏁 DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong> (${referent.nom} - ${depBillets.length}p)`, "success");
-          depBillets = [];
-          depTicketsSet.clear();
-          document.getElementById("listDepScanned").innerHTML = "";
-          document.getElementById("depTel").value = "";
-          document.getElementById("boxScannedDep").style.display = "none";
-        } else {
-          soundBuzz();
-          showBanner("❌ Erreur d'enregistrement.", "error");
-        }
-      })
-      .catch(() => {
-        soundBuzz();
-        showBanner("❌ Erreur de communication.", "error");
-      });
+          soundTing(); showBanner(`🏁 DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong>`, "success");
+          depBillets = []; depTicketsSet.clear(); document.getElementById("listDepScanned").innerHTML = ""; document.getElementById("depTel").value = ""; document.getElementById("boxScannedDep").style.display = "none";
+        } else { soundBuzz(); showBanner("❌ Erreur d'enregistrement.", "error"); }
+      }).catch(() => { soundBuzz(); showBanner("❌ Erreur communication.", "error"); });
     }
 
-    // =========================================================================
-    // DÉPART : MANUEL
-    // =========================================================================
     document.getElementById("formDepManuel").addEventListener("submit", (e) => {
-      e.preventDefault();
-      initAudio();
-      const btn = document.getElementById("btnSubmitManuel");
-      btn.disabled = true;
-      showBanner("⏳ Enregistrement du départ...", "loading");
-
-      const nom = document.getElementById("mNom").value.trim();
-      const prenom = document.getElementById("mPrenom").value.trim();
-      const nb = parseInt(document.getElementById("mNb").value);
-
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "creerGroupe",
-          nom: nom,
-          prenom: prenom,
-          telephone: document.getElementById("mTel").value.trim(),
-          nbPers: nb,
-          codesBillets: ""
-        })
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res && res.success) {
-          soundTing();
-          showBanner(`🏁 DÉPART VALIDÉ ! Dossard N° <strong>${res.numGroupe}</strong> (${prenom} ${nom})`, "success");
-          document.getElementById("formDepManuel").reset();
-          document.getElementById("mNb").value = "1";
-        } else {
-          soundBuzz();
-          showBanner("❌ Erreur d'enregistrement.", "error");
-        }
-      })
-      .catch(() => {
-        soundBuzz();
-        showBanner("❌ Erreur de communication.", "error");
-      })
-      .finally(() => { btn.disabled = false; });
+      e.preventDefault(); initAudio();
+      const btn = document.getElementById("btnSubmitManuel"); btn.disabled = true;
+      showBanner("⏳ Enregistrement...", "loading");
+      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: document.getElementById("mNom").value.trim(), prenom: document.getElementById("mPrenom").value.trim(), telephone: document.getElementById("mTel").value.trim(), nbPers: parseInt(document.getElementById("mNb").value), codesBillets: "" }) })
+      .then(r => r.json()).then(res => {
+        if (res && res.success) { soundTing(); showBanner(`🏁 DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong>`, "success"); document.getElementById("formDepManuel").reset(); } 
+        else { soundBuzz(); showBanner("❌ Erreur.", "error"); }
+      }).catch(() => { soundBuzz(); showBanner("❌ Erreur.", "error"); }).finally(() => { btn.disabled = false; });
     });
-
-    // =========================================================================
-    // RAVITAILLEMENTS & ARRIVÉE
-    // =========================================================================
-    function validerPassageDirect(query) {
-      initAudio();
-      const q = extraireNumeroBillet(query);
-      if (!q) return;
-
-      const poste = document.getElementById("selectPoste").value;
-      const nomPoste = document.getElementById("selectPoste").selectedOptions[0].text;
-
-      showBanner(`⏳ Recherche et pointage de <strong>#${q}</strong>...`, "loading");
-      document.getElementById("cardRecapPassage").style.display = "none";
-
-      // 1. Appel direct du pointage
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "pointerPassage", poste: poste, numGroupe: q })
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res && res.success) {
-          soundTing();
-          showBanner(`✅ <strong>${nomPoste}</strong> validé à <strong>${res.heure}</strong> pour #${q} !`, "success");
-          document.getElementById("inputPassageManual").value = "";
-        } else {
-          soundBuzz();
-          showBanner(`❌ Dossard ou billet #${q} introuvable sur le parcours.`, "error");
-        }
-      })
-      .catch(() => {
-        soundBuzz();
-        showBanner("❌ Erreur de réseau.", "error");
-      });
-    }
   </script>
 </body>
 </html>
