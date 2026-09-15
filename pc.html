@@ -3,77 +3,282 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tour de Contrôle PC</title>
+  <title>Tour de Contrôle PC - Firebase</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- SDKs Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    :root { --primary: #2563eb; --success: #16a34a; --slate: #0f172a; --bg: #f8fafc; --card: #ffffff; --border: #cbd5e1; --text: #1e293b; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 14px 16px 170px 16px; box-sizing: border-box; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    h1 { margin: 0; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .btn { padding: 8px 14px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; text-decoration: none; }
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --slate: #0f172a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #1e293b;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 14px 16px 170px 16px;
+      box-sizing: border-box;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13px;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
     .btn-sheet { background: #059669; color: white; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-dark { background: var(--slate); color: white; }
     .btn-success { background: var(--success); color: white; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .card { background: var(--card); padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-    h2 { margin-top: 0; margin-bottom: 8px; font-size: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 6px; }
-    .sub-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
-    .sub-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      padding: 14px 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 15px;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sub-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .sub-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
     .row { display: flex; gap: 8px; margin-bottom: 6px; }
     .row .col { flex: 1; }
     label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px; }
-    input { width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; box-sizing: border-box;}
-    
-    .scanner-zone { display: none; width: 100%; height: 180px; border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: #000; position: relative; }
-    .scanner-zone video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 100%; min-height: 100%; width: auto !important; height: auto !important; }
+    input {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
 
-    .banner-feedback { display: none; padding: 8px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+    /* ZONE CAMÉRA STABLE ET RECADRÉE */
+    .scanner-zone {
+      display: none;
+      width: 100%;
+      height: 180px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: #000;
+      position: relative;
+    }
+    .scanner-zone video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto !important;
+      height: auto !important;
+    }
+
+    /* BANDEAUX DE FEEDBACK */
+    .banner-feedback {
+      display: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
     .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
     .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
     .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
 
-    .scanned-list { background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; max-height: 75px; overflow-y: auto; margin: 4px 0; }
-    .scanned-item { font-size: 12px; padding: 2px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
-    #progress-tracker { position: fixed; bottom: 0; left: 0; right: 0; height: 150px; background: #ffffff; border-top: 2px solid #e2e8f0; box-shadow: 0 -4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; padding: 8px 16px; z-index: 1000; }
-    .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .tracker-lanes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; height: 100px; }
-    .lane { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
-    .lane-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #475569; background: #e2e8f0; padding: 3px 6px; border-bottom: 1px solid #cbd5e1; }
-    .lane-content { padding: 4px 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; flex: 1; }
-    .badge-group { background: #e0e7ff; color: #1e3a8a; font-size: 11px; padding: 3px 6px; border-radius: 4px; font-weight: 600; border: 1px solid #c7d2fe; display: flex; justify-content: space-between; cursor: help; }
+    .scanned-list {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      max-height: 75px;
+      overflow-y: auto;
+      margin: 4px 0;
+    }
+    .scanned-item {
+      font-size: 12px;
+      padding: 2px 0;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* FRISE DU BAS TEMPS RÉEL */
+    #progress-tracker {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 150px;
+      background: #ffffff;
+      border-top: 2px solid #e2e8f0;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      padding: 8px 16px;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .tracker-lanes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      height: 100px;
+    }
+    .lane {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .lane-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #475569;
+      background: #e2e8f0;
+      padding: 3px 6px;
+      border-bottom: 1px solid #cbd5e1;
+    }
+    .lane-content {
+      padding: 4px 6px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+    .badge-group {
+      background: #e0e7ff;
+      color: #1e3a8a;
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid #c7d2fe;
+      display: flex;
+      justify-content: space-between;
+      cursor: help;
+    }
   </style>
 </head>
 <body>
 
   <header>
     <h1>🏁 Tour de Contrôle des Courses</h1>
-    <a href="https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
+    <div class="header-actions">
+      <!-- Import CSV direct vers Firebase -->
+      <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importerFichierCSV(event)">
+      <button class="btn btn-primary" type="button" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV HelloAsso</button>
+      <a href="https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
+    </div>
   </header>
 
   <div class="grid">
     <!-- GAUCHE : DÉPARTS -->
     <div class="card" style="border-top: 4px solid var(--primary);">
       <h2>🚩 Enregistrement des Départs</h2>
+      
+      <!-- SCAN BILLET DÉPART -->
       <div class="sub-box">
         <span class="sub-title">1. Scanner le(s) billet(s) (QR Code)</span>
         <div id="bannerDepStatus" class="banner-feedback"></div>
         <button class="btn btn-dark" type="button" id="btnCamDep" style="width:100%; margin-bottom:6px;" onclick="toggleScanner('reader-dep', 'btnCamDep', 'depart')">📷 Scanner Billet(s) QR</button>
         <div id="reader-dep" class="scanner-zone"></div>
+
         <div id="boxScannedDep" style="display:none; margin-top:4px;">
           <div style="font-size:12px; font-weight:700;" id="depCountText">Membres du groupe : 0</div>
           <div class="scanned-list" id="depMembersList"></div>
           <div class="row" style="margin-bottom:0; margin-top:4px;">
-            <div class="col"><input type="tel" id="depTelQR" placeholder="📞 Tél. référent"></div>
+            <div class="col"><input type="tel" id="depTelQR" placeholder="📞 Tél. référent (06...)"></div>
             <div class="col" style="flex:0 0 auto;"><button class="btn btn-success" type="button" onclick="validerDepartGroupeQR()">Valider Départ QR</button></div>
           </div>
         </div>
       </div>
+
+      <!-- DÉPART MANUEL -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Ou Nouveau Départ Manuel (Sans Billet)</span>
         <form id="formManPC">
-          <div class="row"><div class="col"><label>Nom *</label><input type="text" id="pcNom" required></div><div class="col"><label>Prénom *</label><input type="text" id="pcPrenom" required></div></div>
-          <div class="row"><div class="col"><label>Téléphone *</label><input type="tel" id="pcTel" placeholder="06..." required></div><div class="col" style="max-width:100px;"><label>Nb pers. *</label><input type="number" id="pcNb" min="1" value="1" required></div></div>
+          <div class="row">
+            <div class="col"><label>Nom *</label><input type="text" id="pcNom" required></div>
+            <div class="col"><label>Prénom *</label><input type="text" id="pcPrenom" required></div>
+          </div>
+          <div class="row">
+            <div class="col"><label>Téléphone *</label><input type="tel" id="pcTel" placeholder="06..." required></div>
+            <div class="col" style="max-width:100px;"><label>Nb pers. *</label><input type="number" id="pcNb" min="1" value="1" required></div>
+          </div>
           <button type="submit" class="btn btn-primary" id="btnSubmitPC" style="width:100%;">Valider le Départ Manuel</button>
         </form>
       </div>
@@ -82,6 +287,8 @@
     <!-- DROITE : ARRIVÉE & RAVITAILLEMENTS -->
     <div class="card" style="border-top: 4px solid var(--success);">
       <h2>🏁 Arrivée & Contrôle Ravitaillements</h2>
+      
+      <!-- POINTAGE RAPIDE ARRIVÉE -->
       <div class="sub-box">
         <span class="sub-title">1. Pointage Rapide Arrivée</span>
         <div id="bannerArrStatus" class="banner-feedback"></div>
@@ -92,6 +299,8 @@
           <button class="btn btn-success" type="button" onclick="validerArriveeParInput()">Valider</button>
         </div>
       </div>
+
+      <!-- RECHERCHE & SECOURS -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Recherche & Pointage Ravitaillements</span>
         <div style="display:flex; gap:6px; margin-bottom:6px;">
@@ -112,10 +321,11 @@
     </div>
   </div>
 
+  <!-- FRISE EN TEMPS RÉEL (SYNCHRONISÉE EN DIRECT) -->
   <div id="progress-tracker">
     <div class="tracker-header">
-      <span style="font-weight:700; font-size:11px; color:#334155;">AVANCEMENT DU CIRCUIT</span>
-      <span id="trackerTimer" style="font-size:11px; color:#64748b;">Mise à jour...</span>
+      <span style="font-weight:700; font-size:11px; color:#334155;">AVANCEMENT DU CIRCUIT EN DIRECT (SURVOLER POUR LES INFOS)</span>
+      <span id="trackerTimer" style="font-size:11px; color:#64748b;">Connecté en direct</span>
     </div>
     <div class="tracker-lanes">
       <div class="lane"><div class="lane-title" id="t-dep">En Course (0p)</div><div class="lane-content" id="l-dep"></div></div>
@@ -126,27 +336,86 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
+    // CONFIGURATION FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmmJuTPZDYt9iPwdgpUrH46uREM1fw0_k",
+      authDomain: "gestion-rando.firebaseapp.com",
+      databaseURL: "https://gestion-rando-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "gestion-rando",
+      storageBucket: "gestion-rando.firebasestorage.app",
+      messagingSenderId: "860391897926",
+      appId: "1:860391897926:web:e630765c8435566ec10347"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // Sons natifs
+    // EFFETS SONORES (WEB AUDIO API NATIVE)
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
-    function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
-    function soundBip() { try { initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type="sine"; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime+0.08); }catch(e){} }
-    function soundTing() { try { initAudio(); const now=audioCtx.currentTime, osc1=audioCtx.createOscillator(), osc2=audioCtx.createOscillator(), gain=audioCtx.createGain(); osc1.type="triangle"; osc1.frequency.setValueAtTime(523.25, now); osc1.frequency.setValueAtTime(659.25, now+0.08); osc2.type="sine"; osc2.frequency.setValueAtTime(1046.50, now+0.08); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4); osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination); osc1.start(now); osc2.start(now+0.08); osc1.stop(now+0.4); osc2.stop(now+0.4); }catch(e){} }
-    function soundBuzz() { try { initAudio(); const now=audioCtx.currentTime; function playTut(t){const osc=audioCtx.createOscillator(), gain=audioCtx.createGain(); osc.type="sawtooth"; osc.frequency.setValueAtTime(180,t); gain.gain.setValueAtTime(0.25,t); gain.gain.linearRampToValueAtTime(0.01,t+0.12); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t+0.12);} playTut(now); playTut(now+0.16); }catch(e){} }
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    function soundBip() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = "sine"; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+    function soundTing() {
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc1.type = "triangle"; osc1.frequency.setValueAtTime(523.25, now); osc1.frequency.setValueAtTime(659.25, now + 0.08);
+        osc2.type = "sine"; osc2.frequency.setValueAtTime(1046.50, now + 0.08);
+        gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
+        osc1.start(now); osc2.start(now + 0.08); osc1.stop(now + 0.4); osc2.stop(now + 0.4);
+      } catch(e) {}
+    }
+    function soundBuzz() {
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        function playTut(t) {
+          const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+          osc.type = "sawtooth"; osc.frequency.setValueAtTime(180, t);
+          gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(t); osc.stop(t + 0.12);
+        }
+        playTut(now); playTut(now + 0.16);
+      } catch(e) {}
+    }
 
-    let activeScanner = null, activeScannerId = null, targetNumGroupe = null;
+    let activeScanner = null, activeScannerId = null, targetGroupeKey = null;
     let depBillets = [], depTicketsSet = new Set();
 
     function extraireNumeroBillet(texteScanne) {
-      var texte = (texteScanne || "").trim(); if (/^\d+$/.test(texte)) return texte;
-      try { var decodage = atob(texte); if (decodage.indexOf(":") !== -1) return decodage.split(":")[0].trim(); } catch (e) {} return texte;
+      var texte = (texteScanne || "").trim();
+      if (/^\d+$/.test(texte)) return texte;
+      try {
+        var decodage = atob(texte);
+        if (decodage.indexOf(":") !== -1) return decodage.split(":")[0].trim();
+      } catch (e) {}
+      return texte;
     }
 
     async function stopScanner() {
-      if (activeScanner) { try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {} activeScanner = null; }
-      if (activeScannerId) { const el = document.getElementById(activeScannerId); if (el) { el.style.display = "none"; } }
+      if (activeScanner) {
+        try { await activeScanner.stop(); activeScanner.clear(); } catch(e) {}
+        activeScanner = null;
+      }
+      if (activeScannerId) {
+        const el = document.getElementById(activeScannerId);
+        if (el) { el.style.display = "none"; }
+      }
       document.getElementById("btnCamArr").textContent = "📷 Scanner Arrivée QR";
       document.getElementById("btnCamDep").textContent = "📷 Scanner Billet(s) QR";
       activeScannerId = null;
@@ -154,7 +423,10 @@
 
     async function toggleScanner(readerId, btnId, type) {
       initAudio();
-      if (activeScanner && activeScannerId === readerId) { await stopScanner(); return; }
+      if (activeScanner && activeScannerId === readerId) {
+        await stopScanner();
+        return;
+      }
       await stopScanner();
 
       document.getElementById(readerId).style.display = "block";
@@ -168,14 +440,9 @@
         (decodedText) => {
           soundBip();
           const num = extraireNumeroBillet(decodedText);
-
-          // Arrêt immédiat de la caméra pour départ ou arrivée
           stopScanner().then(() => {
-            if (type === "depart") {
-              traiterScanDepart(num);
-            } else if (type === "arrivee") {
-              validerArriveeDirecte(num);
-            }
+            if (type === "depart") traiterScanDepart(num);
+            else if (type === "arrivee") validerArriveeDirecte(num);
           });
         },
         () => {}
@@ -186,7 +453,12 @@
       });
     }
 
-    function afficherFeedbackDepart(msg, type) { const b = document.getElementById("bannerDepStatus"); b.className = "banner-feedback banner-" + type; b.innerHTML = msg; }
+    // GESTION DU DÉPART QR
+    function afficherFeedbackDepart(msg, type) {
+      const b = document.getElementById("bannerDepStatus");
+      b.className = "banner-feedback banner-" + type;
+      b.innerHTML = msg;
+    }
 
     function traiterScanDepart(numTicket) {
       if (depTicketsSet.has(numTicket)) {
@@ -194,116 +466,332 @@
         afficherFeedbackDepart(`⚠️ Billet #${numTicket} déjà présent dans le groupe.`, "error");
         return;
       }
+      afficherFeedbackDepart(`⏳ Recherche du billet <strong>#${numTicket}</strong>...`, "loading");
 
-      afficherFeedbackDepart(`⏳ Recherche <strong>#${numTicket}</strong>...`, "loading");
-      fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, { method: "GET" })
-      .then(r => r.json()).then(d => {
-        if (d && d.found) {
+      db.ref("helloasso/" + numTicket).once("value").then(snap => {
+        const d = snap.val();
+        if (d) {
           soundTing();
           depTicketsSet.add(numTicket);
-          depBillets.push(d);
+          depBillets.push({ ticket: numTicket, nom: d.nom, prenom: d.prenom, email: d.email });
           actualiserVisuelDepartQR();
           afficherFeedbackDepart(`✅ Ajouté : <strong>${d.prenom} ${d.nom}</strong>`, "success");
         } else {
           soundBuzz();
-          afficherFeedbackDepart(`❌ Billet #${numTicket} inconnu.`, "error");
+          afficherFeedbackDepart(`❌ Billet #${numTicket} introuvable dans HelloAsso.`, "error");
         }
       }).catch(() => {
         soundBuzz();
-        afficherFeedbackDepart("❌ Erreur réseau.", "error");
+        afficherFeedbackDepart("❌ Erreur de lecture de la base de données.", "error");
       });
     }
 
     function actualiserVisuelDepartQR() {
       document.getElementById("boxScannedDep").style.display = "block";
-      const l = document.getElementById("depMembersList"); l.innerHTML = "";
-      depBillets.forEach((b, i) => { l.innerHTML += `<div class="scanned-item"><span><strong>${i+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span></div>`; });
+      const l = document.getElementById("depMembersList");
+      l.innerHTML = "";
+      depBillets.forEach((b, i) => {
+        l.innerHTML += `<div class="scanned-item"><span><strong>${i+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span></div>`;
+      });
       document.getElementById("depCountText").textContent = `Membres du groupe : ${depBillets.length} personne(s)`;
     }
 
     function validerDepartGroupeQR() {
-      initAudio(); const tel = document.getElementById("depTelQR").value.trim();
-      if (!tel) { soundBuzz(); afficherFeedbackDepart("⚠️ Tél référent requis.", "error"); return; }
-      if (depBillets.length === 0) { soundBuzz(); afficherFeedbackDepart("⚠️ Aucun billet scanné.", "error"); return; }
-      afficherFeedbackDepart("⏳ Enregistrement...", "loading");
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: depBillets[0].nom, prenom: depBillets[0].prenom, email: depBillets[0].email, telephone: tel, nbPers: depBillets.length, codesBillets: Array.from(depTicketsSet).join(", ") }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) {
-          soundTing(); afficherFeedbackDepart(`✅ DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong>`, "success");
-          depBillets = []; depTicketsSet.clear(); document.getElementById("depMembersList").innerHTML = ""; document.getElementById("depTelQR").value = ""; document.getElementById("boxScannedDep").style.display = "none"; setTimeout(refreshTracker, 600);
-        } else { soundBuzz(); afficherFeedbackDepart("❌ Erreur.", "error"); }
-      }).catch(() => { soundBuzz(); afficherFeedbackDepart("❌ Erreur.", "error"); });
+      initAudio();
+      const tel = document.getElementById("depTelQR").value.trim();
+      if (!tel) {
+        soundBuzz();
+        afficherFeedbackDepart("⚠️ Numéro de téléphone du référent requis.", "error");
+        return;
+      }
+      if (depBillets.length === 0) {
+        soundBuzz();
+        afficherFeedbackDepart("⚠️ Aucun billet dans le groupe.", "error");
+        return;
+      }
+
+      const referent = depBillets[0];
+      const listTickets = Array.from(depTicketsSet);
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course").push({
+        numParticipation: listTickets.join(", "),
+        nom: referent.nom,
+        prenom: referent.prenom,
+        email: referent.email || "",
+        telephone: tel,
+        nbPers: depBillets.length,
+        depart: heure,
+        ravito1: "",
+        ravito2: "",
+        arrivee: "",
+        tickets: listTickets
+      }).then(() => {
+        soundTing();
+        afficherFeedbackDepart(`✅ DÉPART VALIDÉ ! (${referent.nom} - ${depBillets.length} pers.)`, "success");
+        depBillets = [];
+        depTicketsSet.clear();
+        document.getElementById("depMembersList").innerHTML = "";
+        document.getElementById("depTelQR").value = "";
+        document.getElementById("boxScannedDep").style.display = "none";
+      }).catch(() => {
+        soundBuzz();
+        afficherFeedbackDepart("❌ Erreur d'enregistrement.", "error");
+      });
     }
 
+    // DÉPART MANUEL
     document.getElementById("formManPC").addEventListener("submit", (e) => {
-      e.preventDefault(); initAudio();
-      const btn = document.getElementById("btnSubmitPC"), msg = document.getElementById("bannerDepStatus"); btn.disabled = true;
+      e.preventDefault();
+      initAudio();
+      const btn = document.getElementById("btnSubmitPC");
+      btn.disabled = true;
       afficherFeedbackDepart("⏳ Enregistrement...", "loading");
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: document.getElementById("pcNom").value.trim(), prenom: document.getElementById("pcPrenom").value.trim(), telephone: document.getElementById("pcTel").value.trim(), nbPers: parseInt(document.getElementById("pcNb").value), codesBillets: "" }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); afficherFeedbackDepart(`✅ Validé ! N° ${res.numGroupe}`, "success"); document.getElementById("formManPC").reset(); setTimeout(refreshTracker, 600); } 
-        else { soundBuzz(); afficherFeedbackDepart("❌ Erreur.", "error"); }
-      }).catch(() => { soundBuzz(); afficherFeedbackDepart("❌ Erreur réseau.", "error"); }).finally(() => { btn.disabled = false; });
+
+      const nom = document.getElementById("pcNom").value.trim();
+      const prenom = document.getElementById("pcPrenom").value.trim();
+      const tel = document.getElementById("pcTel").value.trim();
+      const nb = parseInt(document.getElementById("pcNb").value);
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course").once("value").then(snap => {
+        let maxNum = 100;
+        snap.forEach(child => {
+          const num = parseInt(child.val().numParticipation);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        });
+        const nouveauNum = String(maxNum + 1);
+
+        return db.ref("course").push({
+          numParticipation: nouveauNum,
+          nom: nom, prenom: prenom, telephone: tel, nbPers: nb,
+          depart: heure, ravito1: "", ravito2: "", arrivee: "", tickets: []
+        }).then(() => nouveauNum);
+      }).then((nouveauNum) => {
+        soundTing();
+        afficherFeedbackDepart(`✅ Départ validé ! Dossard N° <strong>${nouveauNum}</strong>`, "success");
+        document.getElementById("formManPC").reset();
+      }).catch(() => {
+        soundBuzz();
+        afficherFeedbackDepart("❌ Erreur lors de l'enregistrement.", "error");
+      }).finally(() => {
+        btn.disabled = false;
+      });
     });
 
-    function afficherFeedbackArrivee(msg, type) { const b = document.getElementById("bannerArrStatus"); b.className = "banner-feedback banner-" + type; b.innerHTML = msg; }
-    function validerArriveeParInput() { const q = extraireNumeroBillet(document.getElementById("inputArrDirect").value); if (q) validerArriveeDirecte(q); }
-    document.getElementById("inputArrDirect").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); validerArriveeParInput(); } });
+    // ARRIVÉE RAPIDE
+    function afficherFeedbackArrivee(msg, type) {
+      const b = document.getElementById("bannerArrStatus");
+      b.className = "banner-feedback banner-" + type;
+      b.innerHTML = msg;
+    }
+    function validerArriveeParInput() {
+      const q = extraireNumeroBillet(document.getElementById("inputArrDirect").value);
+      if (q) validerArriveeDirecte(q);
+    }
+    document.getElementById("inputArrDirect").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); validerArriveeParInput(); }
+    });
 
-    function validerArriveeDirecte(num) {
+    function validerArriveeDirecte(query) {
       initAudio();
-      afficherFeedbackArrivee(`⏳ Validation <strong>#${num}</strong>...`, "loading");
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "pointerPassage", poste: "arrivee", numGroupe: num }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${res.heure}</strong> pour #${num} !`, "success"); document.getElementById("inputArrDirect").value = ""; setTimeout(refreshTracker, 600); } 
-        else { soundBuzz(); afficherFeedbackArrivee(`❌ Dossard #${num} introuvable.`, "error"); }
-      }).catch(() => { soundBuzz(); afficherFeedbackArrivee("❌ Erreur.", "error"); });
+      afficherFeedbackArrivee(`⏳ Validation de l'Arrivée pour <strong>#${query}</strong>...`, "loading");
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course").once("value").then(snap => {
+        let matchKey = null;
+        snap.forEach(child => {
+          const val = child.val();
+          if (val.numParticipation === query || (val.tickets && val.tickets.includes(query))) {
+            matchKey = child.key;
+          }
+        });
+
+        if (matchKey) {
+          return db.ref("course/" + matchKey).update({ arrivee: heure }).then(() => {
+            soundTing();
+            afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${heure}</strong> pour #${query} !`, "success");
+            document.getElementById("inputArrDirect").value = "";
+          });
+        } else {
+          soundBuzz();
+          afficherFeedbackArrivee(`❌ Dossard ou billet #${query} introuvable sur la course.`, "error");
+        }
+      }).catch(() => {
+        soundBuzz();
+        afficherFeedbackArrivee("❌ Erreur réseau.", "error");
+      });
     }
 
-    document.getElementById("pcSearchQuery").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); chercherPC(document.getElementById("pcSearchQuery").value); } });
+    // RECHERCHE & RAVITAILLEMENTS PC
+    document.getElementById("pcSearchQuery").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); chercherPC(document.getElementById("pcSearchQuery").value); }
+    });
 
     function chercherPC(query) {
       initAudio();
-      const q = extraireNumeroBillet(query); if (!q) return;
-      const msg = document.getElementById("msgPointagePC"); msg.style.color = "#1e293b"; msg.textContent = `⏳ Recherche #${q}...`; document.getElementById("recapPC").style.display = "none";
-      fetch(`${SCRIPT_URL}?action=findGroupe&query=${encodeURIComponent(q)}`, { method: "GET" })
-      .then(r => r.json()).then(d => {
-        if (d && d.found) { targetNumGroupe = d.numGroupe; document.getElementById("pcDispNom").textContent = `${d.nom} ${d.prenom}`; document.getElementById("pcDispNb").textContent = d.nbPers; document.getElementById("pcDispNum").textContent = d.numGroupe; document.getElementById("pcDispTel").textContent = d.telephone; document.getElementById("recapPC").style.display = "block"; msg.textContent = ""; soundTing(); } 
-        else { soundBuzz(); msg.style.color = "red"; msg.textContent = `❌ Dossard #${q} non trouvé.`; }
-      }).catch(() => { soundBuzz(); msg.style.color = "red"; msg.textContent = "❌ Erreur transmission."; });
+      const q = extraireNumeroBillet(query);
+      if (!q) return;
+
+      const msg = document.getElementById("msgPointagePC");
+      msg.style.color = "#1e293b";
+      msg.textContent = `⏳ Recherche #${q}...`;
+      document.getElementById("recapPC").style.display = "none";
+
+      db.ref("course").once("value").then(snap => {
+        let match = null;
+        snap.forEach(child => {
+          const val = child.val();
+          if (val.numParticipation === q || (val.tickets && val.tickets.includes(q))) {
+            match = { key: child.key, ...val };
+          }
+        });
+
+        if (match) {
+          targetGroupeKey = match.key;
+          document.getElementById("pcDispNom").textContent = `${match.nom} ${match.prenom}`;
+          document.getElementById("pcDispNb").textContent = match.nbPers;
+          document.getElementById("pcDispNum").textContent = match.numParticipation;
+          document.getElementById("pcDispTel").textContent = match.telephone;
+          document.getElementById("recapPC").style.display = "block";
+          msg.textContent = "";
+          soundTing();
+        } else {
+          soundBuzz();
+          msg.style.color = "red";
+          msg.textContent = `❌ Dossard #${q} non trouvé.`;
+        }
+      }).catch(() => {
+        soundBuzz();
+        msg.style.color = "red";
+        msg.textContent = "❌ Erreur de transmission.";
+      });
     }
 
     function validerPostePC(poste) {
-      initAudio(); if (!targetNumGroupe) return;
-      const msg = document.getElementById("msgPointagePC"); msg.style.color = "#1e293b"; msg.textContent = "⏳ Validation...";
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "pointerPassage", poste: poste, numGroupe: targetNumGroupe }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); msg.style.color = "green"; msg.textContent = `✅ Validé à ${res.heure} !`; document.getElementById("recapPC").style.display = "none"; document.getElementById("pcSearchQuery").value = ""; setTimeout(refreshTracker, 600); } 
-        else { soundBuzz(); msg.style.color = "red"; msg.textContent = "❌ Échec pointage."; }
-      }).catch(() => { soundBuzz(); msg.style.color = "red"; msg.textContent = "❌ Erreur."; });
+      initAudio();
+      if (!targetGroupeKey) return;
+      const msg = document.getElementById("msgPointagePC");
+      msg.style.color = "#1e293b";
+      msg.textContent = "⏳ Validation...";
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course/" + targetGroupeKey).update({ [poste]: heure }).then(() => {
+        soundTing();
+        msg.style.color = "green";
+        msg.textContent = `✅ Validé à ${heure} !`;
+        document.getElementById("recapPC").style.display = "none";
+        document.getElementById("pcSearchQuery").value = "";
+      }).catch(() => {
+        soundBuzz();
+        msg.style.color = "red";
+        msg.textContent = "❌ Échec du pointage.";
+      });
     }
 
-    function refreshTracker() {
-      fetch(`${SCRIPT_URL}?action=getAll`, { method: "GET" })
-      .then(r => r.json()).then(res => {
-        if (!res || !res.success) return;
-        ["l-dep", "l-r1", "l-r2", "l-arr"].forEach(id => document.getElementById(id).innerHTML = "");
-        let cDep=0, cR1=0, cR2=0, cArr=0;
-        res.participants.forEach(p => {
-          const nb = parseInt(p.nbPers) || 1;
-          const badge = document.createElement("div"); badge.className = "badge-group";
-          badge.title = `N°${p.numGroupe} - ${p.nom} ${p.prenom}\n📞 Tél: ${p.telephone}\nEffectif: ${nb}p\nDépart: ${p.depart} | R1: ${p.ravito1||'-'} | R2: ${p.ravito2||'-'} | Arrivée: ${p.arrivee||'-'}`;
-          badge.innerHTML = `<span>${p.nom}</span><span>(${nb}p)</span>`;
-          if (p.arrivee) { document.getElementById("l-arr").appendChild(badge); cArr += nb; } 
-          else if (p.ravito2) { document.getElementById("l-r2").appendChild(badge); cR2 += nb; } 
-          else if (p.ravito1) { document.getElementById("l-r1").appendChild(badge); cR1 += nb; } 
-          else { document.getElementById("l-dep").appendChild(badge); cDep += nb; }
-        });
-        document.getElementById("t-dep").textContent = `En Course (${cDep}p)`; document.getElementById("t-r1").textContent = `Ravitaillement 1 (${cR1}p)`; document.getElementById("t-r2").textContent = `Ravitaillement 2 (${cR2}p)`; document.getElementById("t-arr").textContent = `Arrivés (${cArr}p)`;
-        const now = new Date(); const timeStr = ("0"+now.getHours()).slice(-2)+":"+("0"+now.getMinutes()).slice(-2); document.getElementById("trackerTimer").textContent = `Actualisé à ${timeStr} | Sur le circuit : ${cDep + cR1 + cR2} pers. (Total : ${cDep + cR1 + cR2 + cArr})`;
-      }).catch(() => {});
+    // SYNCHRONISATION TEMPS RÉEL WEBSOCKET (FRISE EN BAS)
+    db.ref("course").on("value", snap => {
+      ["l-dep", "l-r1", "l-r2", "l-arr"].forEach(id => document.getElementById(id).innerHTML = "");
+      let cDep = 0, cR1 = 0, cR2 = 0, cArr = 0;
+
+      snap.forEach(child => {
+        const p = child.val();
+        const nb = parseInt(p.nbPers) || 1;
+        const badge = document.createElement("div");
+        badge.className = "badge-group";
+        badge.title = `N°${p.numParticipation} - ${p.nom} ${p.prenom}\n📞 Tél: ${p.telephone}\nEffectif: ${nb}p\nDépart: ${p.depart} | R1: ${p.ravito1 || '-'} | R2: ${p.ravito2 || '-'} | Arrivée: ${p.arrivee || '-'}`;
+        badge.innerHTML = `<span>${p.nom}</span><span>(${nb}p)</span>`;
+
+        if (p.arrivee) {
+          document.getElementById("l-arr").appendChild(badge);
+          cArr += nb;
+        } else if (p.ravito2) {
+          document.getElementById("l-r2").appendChild(badge);
+          cR2 += nb;
+        } else if (p.ravito1) {
+          document.getElementById("l-r1").appendChild(badge);
+          cR1 += nb;
+        } else {
+          document.getElementById("l-dep").appendChild(badge);
+          cDep += nb;
+        }
+      });
+
+      document.getElementById("t-dep").textContent = `En Course (${cDep}p)`;
+      document.getElementById("t-r1").textContent = `Ravitaillement 1 (${cR1}p)`;
+      document.getElementById("t-r2").textContent = `Ravitaillement 2 (${cR2}p)`;
+      document.getElementById("t-arr").textContent = `Arrivés (${cArr}p)`;
+
+      const now = new Date();
+      const timeStr = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2) + ":" + ("0" + now.getSeconds()).slice(-2);
+      document.getElementById("trackerTimer").textContent = `En direct à ${timeStr} | Sur le circuit : ${cDep + cR1 + cR2} pers. (Total : ${cDep + cR1 + cR2 + cArr})`;
+    });
+
+    // IMPORT DU FICHIER CSV HELLOASSO VERS FIREBASE
+    function importerFichierCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r\n|\n/);
+        if (lines.length <= 1) {
+          alert("Fichier CSV vide !");
+          return;
+        }
+
+        const sep = lines[0].indexOf(";") !== -1 ? ";" : ",";
+        const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+
+        let colTicket = headers.findIndex(h => h.includes("billet") || h.includes("ticket") || h.includes("code"));
+        let colNom = headers.findIndex(h => h === "nom" || h.includes("nom"));
+        let colPrenom = headers.findIndex(h => h === "prénom" || h === "prenom");
+        let colEmail = headers.findIndex(h => h.includes("mail"));
+
+        if (colTicket === -1) colTicket = 11;
+        if (colNom === -1) colNom = 3;
+        if (colPrenom === -1) colPrenom = 4;
+        if (colEmail === -1) colEmail = 7;
+
+        const payload = {};
+        let count = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const cols = line.split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
+          const ticket = cols[colTicket];
+
+          if (ticket) {
+            payload[ticket] = {
+              nom: cols[colNom] || "",
+              prenom: cols[colPrenom] || "",
+              email: cols[colEmail] || ""
+            };
+            count++;
+          }
+        }
+
+        if (count === 0) {
+          alert("Aucun billet trouvé dans le fichier CSV.");
+          return;
+        }
+
+        if (confirm(`Importer ${count} participants HelloAsso dans Firebase ?`)) {
+          db.ref("helloasso").set(payload).then(() => {
+            soundTing();
+            alert(`✅ Succès : ${count} billets importés dans Firebase !`);
+          }).catch(err => {
+            soundBuzz();
+            alert("Erreur d'import : " + err.message);
+          });
+        }
+        event.target.value = "";
+      };
+      reader.readAsText(file, "UTF-8");
     }
-    refreshTracker(); setInterval(refreshTracker, 60000);
   </script>
 </body>
 </html>
