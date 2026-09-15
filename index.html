@@ -5,38 +5,134 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Départs - Pointage Course</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- SDKs Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    :root { --primary: #2563eb; --success: #16a34a; --danger: #dc2626; --slate: #0f172a; --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1; --text: #0f172a; }
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --slate: #0f172a;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+    }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; }
-    header { text-align: center; margin-bottom: 12px; }
-    h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary); }
-    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.04); margin-bottom: 12px; }
-    .btn { width: 100%; padding: 12px 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 12px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      margin-bottom: 12px;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+    }
     .btn-primary { background: var(--primary); color: white; }
     .btn-success { background: var(--success); color: white; }
     .btn-dark { background: var(--slate); color: white; }
-    .scanner-wrapper { display: none; width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #000; }
+
+    /* ZONE CAMÉRA SMARTPHONE */
+    .scanner-wrapper {
+      display: none;
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      background: #000;
+    }
     #reader video { object-fit: cover !important; }
-    .feedback-banner { display: none; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+
+    .feedback-banner {
+      display: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+    }
     .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
     .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
     .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+
     .form-group { margin-bottom: 10px; }
     label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px; color: #334155; }
-    input { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; background: #ffffff; }
-    .scanned-list { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 8px; max-height: 140px; overflow-y: auto; margin: 8px 0; }
-    .scanned-item { font-size: 13px; padding: 6px 0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
+    input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      background: #ffffff;
+    }
+
+    .scanned-list {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      max-height: 140px;
+      overflow-y: auto;
+      margin: 8px 0;
+    }
+    .scanned-item {
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+    }
   </style>
 </head>
 <body>
-  <header><h1>🚩 Enregistrement Départs</h1></header>
+
+  <header>
+    <h1>🚩 Enregistrement Départs</h1>
+  </header>
+
+  <!-- BANDEAU DE FEEDBACK -->
   <div id="bannerFeedback" class="feedback-banner"></div>
 
-  <div id="scannerBox" class="scanner-wrapper"><div id="reader"></div></div>
+  <!-- ZONE CAMÉRA -->
+  <div id="scannerBox" class="scanner-wrapper">
+    <div id="reader"></div>
+  </div>
 
+  <!-- DÉPART AVEC BILLETS QR -->
   <div class="card">
     <button class="btn btn-dark" type="button" id="btnCam" onclick="toggleCamera()">📷 Scanner Billet(s) QR</button>
+    
     <div id="boxScannedDep" style="display:none; margin-top:12px;">
       <div style="font-weight:700; font-size:13px;" id="txtDepCount">Groupe : 0 pers.</div>
       <div class="scanned-list" id="listDepScanned"></div>
@@ -48,21 +144,50 @@
     </div>
   </div>
 
+  <!-- DÉPART MANUEL (SANS BILLET) -->
   <div class="card">
     <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#475569;">OU DÉPART MANUEL (SANS BILLET)</div>
     <form id="formDepManuel">
-      <div class="form-group"><label>Nom *</label><input type="text" id="mNom" required></div>
-      <div class="form-group"><label>Prénom *</label><input type="text" id="mPrenom" required></div>
-      <div class="form-group"><label>Téléphone *</label><input type="tel" id="mTel" placeholder="06..." required></div>
-      <div class="form-group"><label>Nombre de personnes *</label><input type="number" id="mNb" min="1" value="1" required></div>
+      <div class="form-group">
+        <label>Nom *</label>
+        <input type="text" id="mNom" required>
+      </div>
+      <div class="form-group">
+        <label>Prénom *</label>
+        <input type="text" id="mPrenom" required>
+      </div>
+      <div class="form-group">
+        <label>Téléphone *</label>
+        <input type="tel" id="mTel" placeholder="06..." required>
+      </div>
+      <div class="form-group">
+        <label>Nombre de personnes *</label>
+        <input type="number" id="mNb" min="1" value="1" required>
+      </div>
       <button class="btn btn-primary" type="submit" id="btnSubmitManuel">Valider Départ Manuel</button>
     </form>
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
-    let html5QrCode = null, isScanningLocked = false;
-    let depBillets = [], depTicketsSet = new Set();
+    // CONFIGURATION FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmmJuTPZDYt9iPwdgpUrH46uREM1fw0_k",
+      authDomain: "gestion-rando.firebaseapp.com",
+      databaseURL: "https://gestion-rando-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "gestion-rando",
+      storageBucket: "gestion-rando.firebasestorage.app",
+      messagingSenderId: "860391897926",
+      appId: "1:860391897926:web:e630765c8435566ec10347"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let html5QrCode = null;
+    let isScanningLocked = false;
+    let depBillets = [];
+    let depTicketsSet = new Set();
+
+    // RETOURS AUDIO NATIFS (WEB AUDIO API)
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -70,14 +195,86 @@
       if (!audioCtx) audioCtx = new AudioContext();
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
-    function soundBip() { try { initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = "sine"; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.08); } catch(e){} }
-    function soundTing() { try { initAudio(); const now = audioCtx.currentTime, osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc1.type = "triangle"; osc1.frequency.setValueAtTime(523.25, now); osc1.frequency.setValueAtTime(659.25, now + 0.08); osc2.type = "sine"; osc2.frequency.setValueAtTime(1046.50, now + 0.08); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4); osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination); osc1.start(now); osc2.start(now + 0.08); osc1.stop(now + 0.4); osc2.stop(now + 0.4); } catch(e){} }
-    function soundBuzz() { try { initAudio(); const now = audioCtx.currentTime; function playTut(t){ const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type = "sawtooth"; osc.frequency.setValueAtTime(180, t); gain.gain.setValueAtTime(0.25, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.12); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.12); } playTut(now); playTut(now + 0.16); } catch(e){} }
-    function extraireNumeroBillet(t) { var txt=(t||"").trim(); if(/^\d+$/.test(txt)) return txt; try { var dec = atob(txt); if(dec.indexOf(":") !== -1) return dec.split(":")[0].trim(); }catch(e){} return txt; }
-    function showBanner(msg, type) { const b = document.getElementById("bannerFeedback"); b.className = "feedback-banner banner-" + type; b.innerHTML = msg; }
+
+    function soundBip() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function soundTing() {
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc1.type = "triangle";
+        osc1.frequency.setValueAtTime(523.25, now);
+        osc1.frequency.setValueAtTime(659.25, now + 0.08);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(1046.50, now + 0.08);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc1.start(now);
+        osc2.start(now + 0.08);
+        osc1.stop(now + 0.4);
+        osc2.stop(now + 0.4);
+      } catch(e) {}
+    }
+
+    function soundBuzz() {
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        function playTut(t) {
+          const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(180, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.12);
+        }
+        playTut(now);
+        playTut(now + 0.16);
+      } catch(e) {}
+    }
+
+    // DÉCODAGE DU FORMAT HELLOASSO
+    function extraireNumeroBillet(texteScanne) {
+      var texte = (texteScanne || "").trim();
+      if (/^\d+$/.test(texte)) return texte;
+      try {
+        var decodage = atob(texte);
+        if (decodage.indexOf(":") !== -1) return decodage.split(":")[0].trim();
+      } catch (e) {}
+      return texte;
+    }
+
+    function showBanner(msg, type) {
+      const b = document.getElementById("bannerFeedback");
+      b.className = "feedback-banner banner-" + type;
+      b.innerHTML = msg;
+    }
 
     async function stopCamera() {
-      if (html5QrCode) { try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e){} html5QrCode = null; }
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e) {}
+        html5QrCode = null;
+      }
       document.getElementById("scannerBox").style.display = "none";
       document.getElementById("btnCam").textContent = "📷 Scanner Billet(s) QR";
       isScanningLocked = false;
@@ -85,64 +282,162 @@
 
     async function toggleCamera() {
       initAudio();
-      if (html5QrCode) { await stopCamera(); return; }
+      if (html5QrCode) {
+        await stopCamera();
+        return;
+      }
       document.getElementById("scannerBox").style.display = "block";
       document.getElementById("btnCam").textContent = "🛑 Éteindre Caméra";
+
       html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start( { facingMode: "environment" }, { fps: 15, qrbox: { width: 220, height: 220 } },
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
         (txt) => {
           if (isScanningLocked) return;
           isScanningLocked = true;
           soundBip();
           const num = extraireNumeroBillet(txt);
+
+          // Extinction immédiate pour libérer le smartphone et éviter le double-scan
           stopCamera().then(() => traiterScanDepart(num));
-        }, ()=>{}
-      ).catch(e => { soundBuzz(); showBanner("Caméra inaccessible.", "error"); stopCamera(); });
+        },
+        () => {}
+      ).catch(e => {
+        soundBuzz();
+        showBanner("Caméra inaccessible : " + e, "error");
+        stopCamera();
+      });
     }
 
     function traiterScanDepart(numTicket) {
-      if (depTicketsSet.has(numTicket)) { soundBuzz(); showBanner(`⚠️ Billet #${numTicket} déjà scanné.`, "error"); return; }
+      if (depTicketsSet.has(numTicket)) {
+        soundBuzz();
+        showBanner(`⚠️ Billet #${numTicket} déjà présent dans ce groupe.`, "error");
+        return;
+      }
       showBanner(`⏳ Vérification du billet <strong>#${numTicket}</strong>...`, "loading");
-      fetch(`${SCRIPT_URL}?action=checkTicket&ticket=${encodeURIComponent(numTicket)}`, { method: "GET" })
-      .then(r => r.json()).then(d => {
-        if (d && d.found) {
-          soundTing(); depTicketsSet.add(numTicket); depBillets.push(d); actualiserVisuel();
+
+      // Requête directe ultra-rapide Firebase (< 30ms)
+      db.ref("helloasso/" + numTicket).once("value").then(snap => {
+        const d = snap.val();
+        if (d) {
+          soundTing();
+          depTicketsSet.add(numTicket);
+          depBillets.push({ ticket: numTicket, nom: d.nom, prenom: d.prenom, email: d.email });
+          actualiserVisuel();
           showBanner(`✅ Ajouté : <strong>${d.prenom} ${d.nom}</strong>`, "success");
-        } else { soundBuzz(); showBanner(`❌ Billet #${numTicket} non trouvé.`, "error"); }
-      }).catch(() => { soundBuzz(); showBanner("❌ Erreur réseau.", "error"); });
+        } else {
+          soundBuzz();
+          showBanner(`❌ Billet #${numTicket} non trouvé dans HelloAsso.`, "error");
+        }
+      }).catch(() => {
+        soundBuzz();
+        showBanner("❌ Erreur réseau.", "error");
+      });
     }
 
     function actualiserVisuel() {
       document.getElementById("boxScannedDep").style.display = "block";
-      const l = document.getElementById("listDepScanned"); l.innerHTML = "";
-      depBillets.forEach((b, i) => { l.innerHTML += `<div class="scanned-item"><span><strong>${i+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span></div>`; });
+      const l = document.getElementById("listDepScanned");
+      l.innerHTML = "";
+      depBillets.forEach((b, i) => {
+        l.innerHTML += `<div class="scanned-item"><span><strong>${i+1}.</strong> ${b.nom} ${b.prenom}</span><span style="color:#64748b;">#${b.ticket}</span></div>`;
+      });
       document.getElementById("txtDepCount").textContent = `Groupe : ${depBillets.length} personne(s)`;
     }
 
     function validerDepartQR() {
       initAudio();
       const tel = document.getElementById("depTel").value.trim();
-      if (!tel) { soundBuzz(); showBanner("⚠️ Téléphone obligatoire.", "error"); return; }
-      if (depBillets.length === 0) { soundBuzz(); showBanner("⚠️ Aucun billet.", "error"); return; }
-      showBanner("⏳ Enregistrement...", "loading");
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: depBillets[0].nom, prenom: depBillets[0].prenom, email: depBillets[0].email, telephone: tel, nbPers: depBillets.length, codesBillets: Array.from(depTicketsSet).join(", ") }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) {
-          soundTing(); showBanner(`🏁 DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong>`, "success");
-          depBillets = []; depTicketsSet.clear(); document.getElementById("listDepScanned").innerHTML = ""; document.getElementById("depTel").value = ""; document.getElementById("boxScannedDep").style.display = "none";
-        } else { soundBuzz(); showBanner("❌ Erreur d'enregistrement.", "error"); }
-      }).catch(() => { soundBuzz(); showBanner("❌ Erreur communication.", "error"); });
+      if (!tel) {
+        soundBuzz();
+        showBanner("⚠️ Téléphone obligatoire pour le groupe.", "error");
+        return;
+      }
+      if (depBillets.length === 0) {
+        soundBuzz();
+        showBanner("⚠️ Aucun billet dans le groupe.", "error");
+        return;
+      }
+
+      showBanner("⏳ Enregistrement du départ...", "loading");
+
+      const referent = depBillets[0];
+      const listTickets = Array.from(depTicketsSet);
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course").push({
+        numParticipation: listTickets.join(", "),
+        nom: referent.nom,
+        prenom: referent.prenom,
+        email: referent.email || "",
+        telephone: tel,
+        nbPers: depBillets.length,
+        depart: heure,
+        ravito1: "",
+        ravito2: "",
+        arrivee: "",
+        tickets: listTickets
+      }).then(() => {
+        soundTing();
+        showBanner(`🏁 DÉPART VALIDÉ ! (${referent.nom} - ${depBillets.length}p)`, "success");
+        depBillets = [];
+        depTicketsSet.clear();
+        document.getElementById("listDepScanned").innerHTML = "";
+        document.getElementById("depTel").value = "";
+        document.getElementById("boxScannedDep").style.display = "none";
+      }).catch(() => {
+        soundBuzz();
+        showBanner("❌ Erreur d'enregistrement.", "error");
+      });
     }
 
+    // GESTION DU DÉPART MANUEL
     document.getElementById("formDepManuel").addEventListener("submit", (e) => {
-      e.preventDefault(); initAudio();
-      const btn = document.getElementById("btnSubmitManuel"); btn.disabled = true;
-      showBanner("⏳ Enregistrement...", "loading");
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "creerGroupe", nom: document.getElementById("mNom").value.trim(), prenom: document.getElementById("mPrenom").value.trim(), telephone: document.getElementById("mTel").value.trim(), nbPers: parseInt(document.getElementById("mNb").value), codesBillets: "" }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); showBanner(`🏁 DÉPART VALIDÉ ! N° <strong>${res.numGroupe}</strong>`, "success"); document.getElementById("formDepManuel").reset(); } 
-        else { soundBuzz(); showBanner("❌ Erreur.", "error"); }
-      }).catch(() => { soundBuzz(); showBanner("❌ Erreur.", "error"); }).finally(() => { btn.disabled = false; });
+      e.preventDefault();
+      initAudio();
+      const btn = document.getElementById("btnSubmitManuel");
+      btn.disabled = true;
+      showBanner("⏳ Enregistrement du départ...", "loading");
+
+      const nom = document.getElementById("mNom").value.trim();
+      const prenom = document.getElementById("mPrenom").value.trim();
+      const tel = document.getElementById("mTel").value.trim();
+      const nb = parseInt(document.getElementById("mNb").value);
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course").once("value").then(snap => {
+        let maxNum = 100;
+        snap.forEach(child => {
+          const num = parseInt(child.val().numParticipation);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        });
+        const nouveauNum = String(maxNum + 1);
+
+        return db.ref("course").push({
+          numParticipation: nouveauNum,
+          nom: nom,
+          prenom: prenom,
+          telephone: tel,
+          nbPers: nb,
+          depart: heure,
+          ravito1: "",
+          ravito2: "",
+          arrivee: "",
+          tickets: []
+        }).then(() => nouveauNum);
+      }).then((nouveauNum) => {
+        soundTing();
+        showBanner(`🏁 DÉPART VALIDÉ ! Dossard N° <strong>${nouveauNum}</strong> (${prenom} ${nom})`, "success");
+        document.getElementById("formDepManuel").reset();
+        document.getElementById("mNb").value = "1";
+      }).catch(() => {
+        soundBuzz();
+        showBanner("❌ Erreur lors de l'enregistrement.", "error");
+      }).finally(() => {
+        btn.disabled = false;
+      });
     });
   </script>
 </body>
