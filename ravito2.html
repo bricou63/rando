@@ -3,32 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Ravitaillement 1</title>
+  <title>Ravitaillement 2</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- SDKs Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    :root { --slate: #0f172a; --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1; --text: #0f172a; }
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 12px; }
-    header { text-align: center; margin-bottom: 12px; }
-    h1 { margin: 0; font-size: 20px; font-weight: 800; color: #0284c7; }
-    .card { background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.04); margin-bottom: 12px; }
-    .btn { width: 100%; padding: 12px 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; gap: 8px; font-size: 14px; }
-    .btn-dark { background: var(--slate); color: white; margin-bottom:10px; }
-    .btn-primary { background: #0284c7; color: white; }
-    .scanner-wrapper { display: none; width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; background: #000; }
+    :root {
+      --primary: #0284c7;
+      --slate: #0f172a;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 12px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .card {
+      background: var(--card);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      margin-bottom: 12px;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .btn-dark { background: var(--slate); color: white; margin-bottom: 10px; }
+    .btn-primary { background: var(--primary); color: white; }
+
+    .scanner-wrapper {
+      display: none;
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      background: #000;
+    }
     #reader video { object-fit: cover !important; }
-    .feedback-banner { display: none; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; }
+
+    .feedback-banner {
+      display: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+    }
     .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
     .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
     .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
-    input { width: 100%; padding: 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; }
+
+    input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      background: #ffffff;
+    }
   </style>
 </head>
 <body>
-  <header><h1>⏱️ Ravitaillement 1</h1></header>
+
+  <header>
+    <h1>⏱️ Ravitaillement 2</h1>
+  </header>
+
   <div id="bannerFeedback" class="feedback-banner"></div>
-  <div id="scannerBox" class="scanner-wrapper"><div id="reader"></div></div>
-  
+
+  <div id="scannerBox" class="scanner-wrapper">
+    <div id="reader"></div>
+  </div>
+
   <div class="card">
     <button class="btn btn-dark" type="button" id="btnCam" onclick="toggleCamera()">📷 Scanner QR Code</button>
     <div style="display:flex; gap:6px;">
@@ -38,21 +113,110 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfCGPbUKUan-c8707B38KZGlf63GFRwBD70sW0ugZK9Sk_-Wkt75aGG1Z2qWnAoY6d-g/exec";
+    // CONFIGURATION FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmmJuTPZDYt9iPwdgpUrH46uREM1fw0_k",
+      authDomain: "gestion-rando.firebaseapp.com",
+      databaseURL: "https://gestion-rando-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "gestion-rando",
+      storageBucket: "gestion-rando.firebasestorage.app",
+      messagingSenderId: "860391897926",
+      appId: "1:860391897926:web:e630765c8435566ec10347"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     const POSTE = "ravito2";
-    let html5QrCode = null, isScanningLocked = false;
+
+    let html5QrCode = null;
+    let isScanningLocked = false;
+
+    // RETOURS AUDIO NATIFS
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
-    function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
-    function soundBip() { try { initAudio(); const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.type="sine"; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime+0.08); }catch(e){} }
-    function soundTing() { try { initAudio(); const now=audioCtx.currentTime, osc1=audioCtx.createOscillator(), osc2=audioCtx.createOscillator(), gain=audioCtx.createGain(); osc1.type="triangle"; osc1.frequency.setValueAtTime(523.25, now); osc1.frequency.setValueAtTime(659.25, now+0.08); osc2.type="sine"; osc2.frequency.setValueAtTime(1046.50, now+0.08); gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.4); osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination); osc1.start(now); osc2.start(now+0.08); osc1.stop(now+0.4); osc2.stop(now+0.4); }catch(e){} }
-    function soundBuzz() { try { initAudio(); const now=audioCtx.currentTime; function playTut(t){const osc=audioCtx.createOscillator(), gain=audioCtx.createGain(); osc.type="sawtooth"; osc.frequency.setValueAtTime(180,t); gain.gain.setValueAtTime(0.25,t); gain.gain.linearRampToValueAtTime(0.01,t+0.12); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t+0.12);} playTut(now); playTut(now+0.16); }catch(e){} }
-    function extraireNumeroBillet(t) { var txt=(t||"").trim(); if(/^\d+$/.test(txt)) return txt; try { var dec=atob(txt); if(dec.indexOf(":")!==-1) return dec.split(":")[0].trim(); }catch(e){} return txt; }
-    function showBanner(msg, type) { const b = document.getElementById("bannerFeedback"); b.className = "feedback-banner banner-" + type; b.innerHTML = msg; }
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function soundBip() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    function soundTing() {
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc1.type = "triangle";
+        osc1.frequency.setValueAtTime(523.25, now);
+        osc1.frequency.setValueAtTime(659.25, now + 0.08);
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(1046.50, now + 0.08);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc1.start(now);
+        osc2.start(now + 0.08);
+        osc1.stop(now + 0.4);
+        osc2.stop(now + 0.4);
+      } catch(e) {}
+    }
+
+    function soundBuzz() {
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        function playTut(t) {
+          const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(180, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.linearRampToValueAtTime(0.01, t + 0.12);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.12);
+        }
+        playTut(now);
+        playTut(now + 0.16);
+      } catch(e) {}
+    }
+
+    function extraireNumeroBillet(texteScanne) {
+      var texte = (texteScanne || "").trim();
+      if (/^\d+$/.test(texte)) return texte;
+      try {
+        var decodage = atob(texte);
+        if (decodage.indexOf(":") !== -1) return decodage.split(":")[0].trim();
+      } catch (e) {}
+      return texte;
+    }
+
+    function showBanner(msg, type) {
+      const b = document.getElementById("bannerFeedback");
+      b.className = "feedback-banner banner-" + type;
+      b.innerHTML = msg;
+    }
 
     async function stopCamera() {
-      if (html5QrCode) { try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e){} html5QrCode = null; }
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); await html5QrCode.clear(); } catch(e) {}
+        html5QrCode = null;
+      }
       document.getElementById("scannerBox").style.display = "none";
       document.getElementById("btnCam").textContent = "📷 Scanner QR Code";
       isScanningLocked = false;
@@ -60,30 +224,74 @@
 
     async function toggleCamera() {
       initAudio();
-      if (html5QrCode) { await stopCamera(); return; }
+      if (html5QrCode) {
+        await stopCamera();
+        return;
+      }
       document.getElementById("scannerBox").style.display = "block";
       document.getElementById("btnCam").textContent = "🛑 Éteindre Caméra";
+
       html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start( { facingMode: "environment" }, { fps: 15, qrbox: { width: 220, height: 220 } },
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 15, qrbox: { width: 220, height: 220 } },
         (txt) => {
           if (isScanningLocked) return;
           isScanningLocked = true;
           soundBip();
           const num = extraireNumeroBillet(txt);
           stopCamera().then(() => valider(num));
-        }, ()=>{}
-      ).catch(e => { soundBuzz(); showBanner("Caméra inaccessible.", "error"); stopCamera(); });
+        },
+        () => {}
+      ).catch(e => {
+        soundBuzz();
+        showBanner("Caméra inaccessible : " + e, "error");
+        stopCamera();
+      });
     }
 
     function valider(query) {
-      initAudio(); const q = extraireNumeroBillet(query); if (!q) return;
+      initAudio();
+      const q = extraireNumeroBillet(query);
+      if (!q) return;
+
       showBanner(`⏳ Pointage de <strong>#${q}</strong>...`, "loading");
-      fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "pointerPassage", poste: POSTE, numGroupe: q }) })
-      .then(r => r.json()).then(res => {
-        if (res && res.success) { soundTing(); showBanner(`✅ Validé à <strong>${res.heure}</strong> pour #${q} !`, "success"); document.getElementById("inputManual").value = ""; } 
-        else { soundBuzz(); showBanner(`❌ Dossard #${q} introuvable.`, "error"); }
-      }).catch(() => { soundBuzz(); showBanner("❌ Erreur réseau.", "error"); });
+      const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+
+      db.ref("course").once("value").then(snap => {
+        let matchKey = null;
+        let participantNom = "";
+
+        snap.forEach(child => {
+          const val = child.val();
+          if (val.numParticipation === q || (val.tickets && val.tickets.includes(q))) {
+            matchKey = child.key;
+            participantNom = val.nom + " " + val.prenom;
+          }
+        });
+
+        if (matchKey) {
+          return db.ref("course/" + matchKey).update({ [POSTE]: heure }).then(() => {
+            soundTing();
+            showBanner(`✅ Validé à <strong>${heure}</strong> pour #${q} (${participantNom}) !`, "success");
+            document.getElementById("inputManual").value = "";
+          });
+        } else {
+          soundBuzz();
+          showBanner(`❌ Dossard #${q} introuvable sur le parcours.`, "error");
+        }
+      }).catch(() => {
+        soundBuzz();
+        showBanner("❌ Erreur de réseau.", "error");
+      });
     }
+
+    document.getElementById("inputManual").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        valider(document.getElementById("inputManual").value);
+      }
+    });
   </script>
 </body>
 </html>
