@@ -113,7 +113,6 @@
       font-size: 13px;
     }
 
-    /* ZONE CAMÉRA STABLE ET RECADRÉE */
     .scanner-zone {
       display: none;
       width: 100%;
@@ -135,7 +134,6 @@
       height: auto !important;
     }
 
-    /* BANDEAUX DE FEEDBACK */
     .banner-feedback {
       display: none;
       padding: 8px 10px;
@@ -166,7 +164,6 @@
       justify-content: space-between;
     }
 
-    /* FRISE DU BAS TEMPS RÉEL */
     #progress-tracker {
       position: fixed;
       bottom: 0;
@@ -238,7 +235,7 @@
   <header>
     <h1>🏁 Tour de Contrôle des Courses</h1>
     <div class="header-actions">
-      <!-- Import CSV direct vers Firebase -->
+      <!-- Import CSV HelloAsso direct vers Firebase -->
       <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importerFichierCSV(event)">
       <button class="btn btn-primary" type="button" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV HelloAsso</button>
       <a href="https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
@@ -250,7 +247,6 @@
     <div class="card" style="border-top: 4px solid var(--primary);">
       <h2>🚩 Enregistrement des Départs</h2>
       
-      <!-- SCAN BILLET DÉPART -->
       <div class="sub-box">
         <span class="sub-title">1. Scanner le(s) billet(s) (QR Code)</span>
         <div id="bannerDepStatus" class="banner-feedback"></div>
@@ -267,7 +263,6 @@
         </div>
       </div>
 
-      <!-- DÉPART MANUEL -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Ou Nouveau Départ Manuel (Sans Billet)</span>
         <form id="formManPC">
@@ -288,7 +283,6 @@
     <div class="card" style="border-top: 4px solid var(--success);">
       <h2>🏁 Arrivée & Contrôle Ravitaillements</h2>
       
-      <!-- POINTAGE RAPIDE ARRIVÉE -->
       <div class="sub-box">
         <span class="sub-title">1. Pointage Rapide Arrivée</span>
         <div id="bannerArrStatus" class="banner-feedback"></div>
@@ -300,7 +294,6 @@
         </div>
       </div>
 
-      <!-- RECHERCHE & SECOURS -->
       <div class="sub-box" style="margin-bottom:0;">
         <span class="sub-title">2. Recherche & Pointage Ravitaillements</span>
         <div style="display:flex; gap:6px; margin-bottom:6px;">
@@ -321,7 +314,6 @@
     </div>
   </div>
 
-  <!-- FRISE EN TEMPS RÉEL (SYNCHRONISÉE EN DIRECT) -->
   <div id="progress-tracker">
     <div class="tracker-header">
       <span style="font-weight:700; font-size:11px; color:#334155;">AVANCEMENT DU CIRCUIT EN DIRECT (SURVOLER POUR LES INFOS)</span>
@@ -349,7 +341,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // EFFETS SONORES (WEB AUDIO API NATIVE)
+    // RETOURS AUDIO NATIFS
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
     function initAudio() {
@@ -689,7 +681,7 @@
       });
     }
 
-    // SYNCHRONISATION TEMPS RÉEL WEBSOCKET (FRISE EN BAS)
+    // SYNCHRONISATION EN DIRECT WEBSOCKET (FRISE EN BAS)
     db.ref("course").on("value", snap => {
       ["l-dep", "l-r1", "l-r2", "l-arr"].forEach(id => document.getElementById(id).innerHTML = "");
       let cDep = 0, cR1 = 0, cR2 = 0, cArr = 0;
@@ -727,7 +719,9 @@
       document.getElementById("trackerTimer").textContent = `En direct à ${timeStr} | Sur le circuit : ${cDep + cR1 + cR2} pers. (Total : ${cDep + cR1 + cR2 + cArr})`;
     });
 
-    // IMPORT DU FICHIER CSV HELLOASSO VERS FIREBASE
+    // =========================================================================
+    // IMPORT DU FICHIER CSV HELLOASSO VERS FIREBASE (CIBLAGE COLONNE 11)
+    // =========================================================================
     function importerFichierCSV(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -742,16 +736,23 @@
         }
 
         const sep = lines[0].indexOf(";") !== -1 ? ";" : ",";
-        const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+        const headers = lines[0].split(sep).map(h => h.trim().replace(/^[\uFEFF"']+|["']+$/g, '').toLowerCase());
 
-        let colTicket = headers.findIndex(h => h.includes("billet") || h.includes("ticket") || h.includes("code"));
-        let colNom = headers.findIndex(h => h === "nom" || h.includes("nom"));
-        let colPrenom = headers.findIndex(h => h === "prénom" || h === "prenom");
-        let colEmail = headers.findIndex(h => h.includes("mail"));
+        // Ciblage strict de "Numéro de billet" pour ignorer la colonne d'URL "Billet"
+        let colTicket = headers.findIndex(h => h.includes("numéro de billet") || h.includes("numero de billet"));
+        if (colTicket === -1) colTicket = headers.findIndex(h => h === "numéro" || h === "numero");
+        if (colTicket === -1) colTicket = 11; // Index 11 standard HelloAsso
 
-        if (colTicket === -1) colTicket = 11;
+        // Ciblage des participants
+        let colNom = headers.findIndex(h => h.includes("nom participant"));
+        if (colNom === -1) colNom = headers.findIndex(h => h === "nom");
         if (colNom === -1) colNom = 3;
+
+        let colPrenom = headers.findIndex(h => h.includes("prénom participant") || h.includes("prenom participant"));
+        if (colPrenom === -1) colPrenom = headers.findIndex(h => h === "prénom" || h === "prenom");
         if (colPrenom === -1) colPrenom = 4;
+
+        let colEmail = headers.findIndex(h => h.includes("email") || h.includes("mail"));
         if (colEmail === -1) colEmail = 7;
 
         const payload = {};
@@ -761,8 +762,14 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          const cols = line.split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
-          const ticket = cols[colTicket];
+          const cols = line.split(sep).map(c => c.trim().replace(/^["']+|["']+$/g, ''));
+          let ticket = cols[colTicket] ? cols[colTicket].trim() : "";
+
+          // Extraction de secours si le champ est une URL
+          if (ticket.includes("ticketId=")) {
+            const match = ticket.match(/ticketId=(\d+)/);
+            if (match) ticket = match[1];
+          }
 
           if (ticket) {
             payload[ticket] = {
@@ -775,17 +782,17 @@
         }
 
         if (count === 0) {
-          alert("Aucun billet trouvé dans le fichier CSV.");
+          alert("Aucun numéro de billet trouvé dans le fichier CSV.");
           return;
         }
 
         if (confirm(`Importer ${count} participants HelloAsso dans Firebase ?`)) {
           db.ref("helloasso").set(payload).then(() => {
             soundTing();
-            alert(`✅ Succès : ${count} billets importés dans Firebase !`);
+            alert(`✅ Succès : ${count} billets HelloAsso importés dans Firebase !`);
           }).catch(err => {
             soundBuzz();
-            alert("Erreur d'import : " + err.message);
+            alert("Erreur lors de l'import : " + err.message);
           });
         }
         event.target.value = "";
