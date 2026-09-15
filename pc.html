@@ -136,15 +136,16 @@
 
     .banner-feedback {
       display: none;
-      padding: 8px 10px;
+      padding: 10px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       text-align: center;
       margin-bottom: 8px;
+      line-height: 1.4;
     }
     .banner-loading { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; display: block; }
-    .banner-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; display: block; }
+    .banner-success { background: #dcfce7; color: #166534; border: 2px solid #22c55e; display: block; }
     .banner-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
 
     .scanned-list {
@@ -235,7 +236,6 @@
   <header>
     <h1>🏁 Tour de Contrôle des Courses</h1>
     <div class="header-actions">
-      <!-- Import CSV HelloAsso direct vers Firebase -->
       <input type="file" id="csvFileInput" accept=".csv" style="display:none;" onchange="importerFichierCSV(event)">
       <button class="btn btn-primary" type="button" onclick="document.getElementById('csvFileInput').click()">📥 Importer CSV HelloAsso</button>
       <a href="https://docs.google.com/spreadsheets/d/1jniUA8F454Bdid9YNrFQUsxCOFdvSThfDkDW1hRsvfw/edit" target="_blank" class="btn btn-sheet">📊 Ouvrir Google Sheets</a>
@@ -300,16 +300,16 @@
           <input type="text" id="pcSearchQuery" placeholder="N° Dossard ou QR billet..." style="flex:1;">
           <button class="btn btn-primary" type="button" onclick="chercherPC(document.getElementById('pcSearchQuery').value)">Chercher</button>
         </div>
-        <div id="recapPC" style="display:none; background:#ffffff; padding:8px 10px; border-radius:6px; border:1px solid var(--border);">
-          <p style="margin:0 0 2px 0; font-size:13px;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb"></span> pers.)</p>
-          <p style="margin:0 0 6px 0; font-size:11px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
+        <div id="recapPC" style="display:none; background:#ffffff; padding:10px; border-radius:6px; border:1px solid var(--border);">
+          <p style="margin:0 0 2px 0; font-size:14px;">Groupe : <strong id="pcDispNom"></strong> (<span id="pcDispNb" style="font-weight:800; color:#15803d;"></span> pers.)</p>
+          <p style="margin:0 0 8px 0; font-size:11px; color:#64748b;">N° Participation : <strong id="pcDispNum"></strong> | Tél : <span id="pcDispTel"></span></p>
           <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
             <button class="btn btn-primary" type="button" onclick="validerPostePC('ravito1')">Ravitaillement 1</button>
             <button class="btn btn-primary" type="button" onclick="validerPostePC('ravito2')">Ravitaillement 2</button>
             <button class="btn btn-sheet" type="button" onclick="validerPostePC('arrivee')">Arrivée</button>
           </div>
         </div>
-        <div id="msgPointagePC" style="margin-top:4px; font-size:12px; font-weight:700; text-align:center;"></div>
+        <div id="msgPointagePC" style="margin-top:6px; font-size:13px; font-weight:700; text-align:center;"></div>
       </div>
     </div>
   </div>
@@ -386,7 +386,7 @@
       } catch(e) {}
     }
 
-    let activeScanner = null, activeScannerId = null, targetGroupeKey = null;
+    let activeScanner = null, activeScannerId = null, targetGroupeKey = null, targetGroupeData = null;
     let depBillets = [], depTicketsSet = new Set();
 
     function extraireNumeroBillet(texteScanne) {
@@ -520,7 +520,7 @@
         tickets: listTickets
       }).then(() => {
         soundTing();
-        afficherFeedbackDepart(`✅ DÉPART VALIDÉ ! (${referent.nom} - ${depBillets.length} pers.)`, "success");
+        afficherFeedbackDepart(`✅ DÉPART VALIDÉ ! (${referent.nom} - <strong>${depBillets.length} pers.</strong>)`, "success");
         depBillets = [];
         depTicketsSet.clear();
         document.getElementById("depMembersList").innerHTML = "";
@@ -532,7 +532,7 @@
       });
     }
 
-    // DÉPART MANUEL
+    // DÉPART MANUEL (ATTRIBUTION DOSSARDS 101, 102...)
     document.getElementById("formManPC").addEventListener("submit", (e) => {
       e.preventDefault();
       initAudio();
@@ -549,20 +549,32 @@
       db.ref("course").once("value").then(snap => {
         let maxNum = 100;
         snap.forEach(child => {
-          const num = parseInt(child.val().numParticipation);
-          if (!isNaN(num) && num > maxNum) maxNum = num;
+          const val = child.val();
+          const num = parseInt(val.numParticipation);
+          // Filtrage strict entre 100 et 9999 pour ignorer les millions de HelloAsso
+          if (!isNaN(num) && num >= 100 && num < 10000 && num > maxNum) {
+            maxNum = num;
+          }
         });
         const nouveauNum = String(maxNum + 1);
 
         return db.ref("course").push({
           numParticipation: nouveauNum,
-          nom: nom, prenom: prenom, telephone: tel, nbPers: nb,
-          depart: heure, ravito1: "", ravito2: "", arrivee: "", tickets: []
-        }).then(() => nouveauNum);
-      }).then((nouveauNum) => {
+          nom: nom,
+          prenom: prenom,
+          telephone: tel,
+          nbPers: nb,
+          depart: heure,
+          ravito1: "",
+          ravito2: "",
+          arrivee: "",
+          tickets: []
+        }).then(() => ({ num: nouveauNum, nb: nb }));
+      }).then((res) => {
         soundTing();
-        afficherFeedbackDepart(`✅ Départ validé ! Dossard N° <strong>${nouveauNum}</strong>`, "success");
+        afficherFeedbackDepart(`✅ Départ validé ! Dossard N° <strong>${res.num}</strong> (${prenom} ${nom} - <strong>${res.nb} pers.</strong>)`, "success");
         document.getElementById("formManPC").reset();
+        document.getElementById("pcNb").value = "1";
       }).catch(() => {
         soundBuzz();
         afficherFeedbackDepart("❌ Erreur lors de l'enregistrement.", "error");
@@ -571,7 +583,7 @@
       });
     });
 
-    // ARRIVÉE RAPIDE
+    // ARRIVÉE DIRECTE AVEC EFFECTIF
     function afficherFeedbackArrivee(msg, type) {
       const b = document.getElementById("bannerArrStatus");
       b.className = "banner-feedback banner-" + type;
@@ -592,17 +604,21 @@
 
       db.ref("course").once("value").then(snap => {
         let matchKey = null;
+        let pData = null;
+
         snap.forEach(child => {
           const val = child.val();
           if (val.numParticipation === query || (val.tickets && val.tickets.includes(query))) {
             matchKey = child.key;
+            pData = val;
           }
         });
 
-        if (matchKey) {
+        if (matchKey && pData) {
+          const nb = parseInt(pData.nbPers) || 1;
           return db.ref("course/" + matchKey).update({ arrivee: heure }).then(() => {
             soundTing();
-            afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${heure}</strong> pour #${query} !`, "success");
+            afficherFeedbackArrivee(`🏁 ARRIVÉE VALIDÉE à <strong>${heure}</strong> pour #${query} !<br><span style="font-size:15px; color:#15803d; font-weight:800;">(${pData.nom} ${pData.prenom} - ${nb} pers.)</span>`, "success");
             document.getElementById("inputArrDirect").value = "";
           });
         } else {
@@ -615,7 +631,7 @@
       });
     }
 
-    // RECHERCHE & RAVITAILLEMENTS PC
+    // RECHERCHE & RAVITAILLEMENTS PC (AVEC AFFICHAGE CLAIR DE L'EFFECTIF)
     document.getElementById("pcSearchQuery").addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); chercherPC(document.getElementById("pcSearchQuery").value); }
     });
@@ -641,6 +657,7 @@
 
         if (match) {
           targetGroupeKey = match.key;
+          targetGroupeData = match;
           document.getElementById("pcDispNom").textContent = `${match.nom} ${match.prenom}`;
           document.getElementById("pcDispNb").textContent = match.nbPers;
           document.getElementById("pcDispNum").textContent = match.numParticipation;
@@ -662,16 +679,18 @@
 
     function validerPostePC(poste) {
       initAudio();
-      if (!targetGroupeKey) return;
+      if (!targetGroupeKey || !targetGroupeData) return;
       const msg = document.getElementById("msgPointagePC");
       msg.style.color = "#1e293b";
       msg.textContent = "⏳ Validation...";
       const heure = new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+      const nb = parseInt(targetGroupeData.nbPers) || 1;
+      const nomPoste = poste === "ravito1" ? "Ravitaillement 1" : (poste === "ravito2" ? "Ravitaillement 2" : "Arrivée");
 
       db.ref("course/" + targetGroupeKey).update({ [poste]: heure }).then(() => {
         soundTing();
         msg.style.color = "green";
-        msg.textContent = `✅ Validé à ${heure} !`;
+        msg.innerHTML = `✅ <strong>${nomPoste}</strong> validé à <strong>${heure}</strong> !<br><span style="font-size:15px; color:#15803d; font-weight:800;">🍽️ GROUPE DE ${nb} PERSONNE(S) (${targetGroupeData.nom})</span>`;
         document.getElementById("recapPC").style.display = "none";
         document.getElementById("pcSearchQuery").value = "";
       }).catch(() => {
@@ -738,12 +757,10 @@
         const sep = lines[0].indexOf(";") !== -1 ? ";" : ",";
         const headers = lines[0].split(sep).map(h => h.trim().replace(/^[\uFEFF"']+|["']+$/g, '').toLowerCase());
 
-        // Ciblage strict de "Numéro de billet" pour ignorer la colonne d'URL "Billet"
         let colTicket = headers.findIndex(h => h.includes("numéro de billet") || h.includes("numero de billet"));
         if (colTicket === -1) colTicket = headers.findIndex(h => h === "numéro" || h === "numero");
-        if (colTicket === -1) colTicket = 11; // Index 11 standard HelloAsso
+        if (colTicket === -1) colTicket = 11;
 
-        // Ciblage des participants
         let colNom = headers.findIndex(h => h.includes("nom participant"));
         if (colNom === -1) colNom = headers.findIndex(h => h === "nom");
         if (colNom === -1) colNom = 3;
@@ -765,7 +782,6 @@
           const cols = line.split(sep).map(c => c.trim().replace(/^["']+|["']+$/g, ''));
           let ticket = cols[colTicket] ? cols[colTicket].trim() : "";
 
-          // Extraction de secours si le champ est une URL
           if (ticket.includes("ticketId=")) {
             const match = ticket.match(/ticketId=(\d+)/);
             if (match) ticket = match[1];
