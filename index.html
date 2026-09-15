@@ -62,7 +62,6 @@
     .btn-success { background: var(--success); color: white; }
     .btn-dark { background: var(--slate); color: white; }
 
-    /* ZONE CAMÉRA SMARTPHONE */
     .scanner-wrapper {
       display: none;
       width: 100%;
@@ -121,15 +120,12 @@
     <h1>🚩 Enregistrement Départs</h1>
   </header>
 
-  <!-- BANDEAU DE FEEDBACK -->
   <div id="bannerFeedback" class="feedback-banner"></div>
 
-  <!-- ZONE CAMÉRA -->
   <div id="scannerBox" class="scanner-wrapper">
     <div id="reader"></div>
   </div>
 
-  <!-- DÉPART AVEC BILLETS QR -->
   <div class="card">
     <button class="btn btn-dark" type="button" id="btnCam" onclick="toggleCamera()">📷 Scanner Billet(s) QR</button>
     
@@ -144,7 +140,6 @@
     </div>
   </div>
 
-  <!-- DÉPART MANUEL (SANS BILLET) -->
   <div class="card">
     <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#475569;">OU DÉPART MANUEL (SANS BILLET)</div>
     <form id="formDepManuel">
@@ -169,7 +164,6 @@
   </div>
 
   <script>
-    // CONFIGURATION FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyAmmJuTPZDYt9iPwdgpUrH46uREM1fw0_k",
       authDomain: "gestion-rando.firebaseapp.com",
@@ -187,7 +181,6 @@
     let depBillets = [];
     let depTicketsSet = new Set();
 
-    // RETOURS AUDIO NATIFS (WEB AUDIO API)
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
@@ -253,7 +246,6 @@
       } catch(e) {}
     }
 
-    // DÉCODAGE DU FORMAT HELLOASSO
     function extraireNumeroBillet(texteScanne) {
       var texte = (texteScanne || "").trim();
       if (/^\d+$/.test(texte)) return texte;
@@ -298,8 +290,6 @@
           isScanningLocked = true;
           soundBip();
           const num = extraireNumeroBillet(txt);
-
-          // Extinction immédiate pour libérer le smartphone et éviter le double-scan
           stopCamera().then(() => traiterScanDepart(num));
         },
         () => {}
@@ -316,9 +306,8 @@
         showBanner(`⚠️ Billet #${numTicket} déjà présent dans ce groupe.`, "error");
         return;
       }
-      showBanner(`⏳ Vérification du billet <strong>#${numTicket}</strong>...`, "loading");
+      showBanner(`⏳ Recherche du billet <strong>#${numTicket}</strong>...`, "loading");
 
-      // Requête directe ultra-rapide Firebase (< 30ms)
       db.ref("helloasso/" + numTicket).once("value").then(snap => {
         const d = snap.val();
         if (d) {
@@ -381,7 +370,7 @@
         tickets: listTickets
       }).then(() => {
         soundTing();
-        showBanner(`🏁 DÉPART VALIDÉ ! (${referent.nom} - ${depBillets.length}p)`, "success");
+        showBanner(`🏁 DÉPART VALIDÉ ! (${referent.nom} - ${depBillets.length} pers.)`, "success");
         depBillets = [];
         depTicketsSet.clear();
         document.getElementById("listDepScanned").innerHTML = "";
@@ -393,7 +382,7 @@
       });
     }
 
-    // GESTION DU DÉPART MANUEL
+    // DÉPART MANUEL (ATTRIBUTION DOSSARDS 101, 102...)
     document.getElementById("formDepManuel").addEventListener("submit", (e) => {
       e.preventDefault();
       initAudio();
@@ -410,8 +399,12 @@
       db.ref("course").once("value").then(snap => {
         let maxNum = 100;
         snap.forEach(child => {
-          const num = parseInt(child.val().numParticipation);
-          if (!isNaN(num) && num > maxNum) maxNum = num;
+          const val = child.val();
+          const num = parseInt(val.numParticipation);
+          // On ne compare QUE les numéros manuels (entre 100 et 9999) pour ne pas être pollué par les millions d'HelloAsso
+          if (!isNaN(num) && num >= 100 && num < 10000 && num > maxNum) {
+            maxNum = num;
+          }
         });
         const nouveauNum = String(maxNum + 1);
 
@@ -426,10 +419,10 @@
           ravito2: "",
           arrivee: "",
           tickets: []
-        }).then(() => nouveauNum);
-      }).then((nouveauNum) => {
+        }).then(() => ({ num: nouveauNum, nb: nb }));
+      }).then((res) => {
         soundTing();
-        showBanner(`🏁 DÉPART VALIDÉ ! Dossard N° <strong>${nouveauNum}</strong> (${prenom} ${nom})`, "success");
+        showBanner(`🏁 DÉPART VALIDÉ ! Dossard N° <strong>${res.num}</strong> (${prenom} ${nom} - <strong>${res.nb} pers.</strong>)`, "success");
         document.getElementById("formDepManuel").reset();
         document.getElementById("mNb").value = "1";
       }).catch(() => {
